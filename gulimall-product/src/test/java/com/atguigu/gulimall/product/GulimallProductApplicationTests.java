@@ -46,11 +46,15 @@ public class GulimallProductApplicationTests {
 
 
     @Test
-    public void contextLoads() {
+    public void test1() {
 
-//        BrandEntity brandEntity = new BrandEntity();
-//        brandEntity.setBrandId(1L);
-//        brandEntity.setDescript("华为");
+        BrandEntity brandEntity = new BrandEntity();
+
+
+        BrandEntity brandEntity1 = brandService.getById(1L);
+
+        System.out.println(brandEntity1);
+
 
 //
 //        brandEntity.setName("华为");
@@ -60,10 +64,10 @@ public class GulimallProductApplicationTests {
 //        brandService.updateById(brandEntity);
 
 
-        List<BrandEntity> list = brandService.list(new QueryWrapper<BrandEntity>().eq("brand_id", 1L));
-        list.forEach((item) -> {
-            System.out.println(item);
-        });
+//        List<BrandEntity> list = brandService.list(new QueryWrapper<BrandEntity>().eq("brand_id", 1L));
+//        list.forEach((item) -> {
+//            System.out.println(item);
+//        });
 
     }
 

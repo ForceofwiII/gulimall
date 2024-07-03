@@ -1,5 +1,6 @@
 package com.atguigu.gulimall.product;
 
+import com.atguigu.gulimall.product.entity.BrandEntity;
 import com.atguigu.gulimall.product.service.BrandService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,6 +17,10 @@ public class Test {
 
     @org.junit.Test
     public void test(){
-        System.out.println("1");
+
+        BrandEntity brandEntity = new BrandEntity();
+        brandEntity.setName("华为");
+        brandService.save(brandEntity);
+        System.out.println("保存成功....");
     }
 }

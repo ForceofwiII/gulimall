@@ -1,13 +1,27 @@
 package com.atguigu.gulimall.member;
 
-import org.junit.jupiter.api.Test;
+import com.atguigu.gulimall.member.entity.MemberEntity;
+import com.atguigu.gulimall.member.service.MemberService;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+@RunWith(SpringRunner.class)
 @SpringBootTest
-class GulimallMemberApplicationTests {
+public class GulimallMemberApplicationTests {
+
+    @Autowired
+    MemberService memberService;
 
     @Test
-    void contextLoads() {
+    public void contextLoads() {
+
+
+        memberService.removeById(1L);
+
+
     }
 
 }
