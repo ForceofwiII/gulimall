@@ -29,7 +29,7 @@ import com.atguigu.common.utils.R;
 @RefreshScope
 @RestController
 @RequestMapping("coupon/coupon")
-public class CouponController {
+public class   CouponController {
     @Autowired
     private CouponService couponService;
 

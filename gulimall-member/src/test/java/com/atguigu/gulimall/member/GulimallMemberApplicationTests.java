@@ -1,6 +1,8 @@
 package com.atguigu.gulimall.member;
 
+import com.atguigu.common.utils.R;
 import com.atguigu.gulimall.member.entity.MemberEntity;
+import com.atguigu.gulimall.member.feign.CouponFeignService;
 import com.atguigu.gulimall.member.service.MemberService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,13 +17,16 @@ public class GulimallMemberApplicationTests {
     @Autowired
     MemberService memberService;
 
+    @Autowired
+    CouponFeignService couponFeignService;
+
     @Test
     public void contextLoads() {
 
 
-        memberService.removeById(1L);
+        R membercoupons = couponFeignService.membercoupons();
 
-
+        System.out.println(membercoupons);
     }
 
 }
