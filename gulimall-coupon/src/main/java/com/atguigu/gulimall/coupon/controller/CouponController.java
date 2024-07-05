@@ -34,16 +34,9 @@ public class   CouponController {
     private CouponService couponService;
 
 
-    @Value("${coupon.user.name}")
-    private String name;
-    @Value("${coupon.user.age}")
-    private Integer age;
 
-    @RequestMapping("/test")
-    public R test(){
 
-        return R.ok().put("name",name).put("age",age);
-    }
+
 
     @RequestMapping("/member/list")
     public R membercoupons(){
