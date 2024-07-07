@@ -10,6 +10,7 @@
           <h1>
               <input type="text" v-model="num">
               <button v-on:click="a++">点赞</button>
+              <button v-on:click="cancel">取消</button>
               {{name}} 很好 有{{num}}个 {{a}}个赞
           </h1>
       </div>
@@ -25,7 +26,14 @@
                     name: 'Vue',
                     num: 1,
                     a:1
+                },
+                methods:{
+                    cancel(){
+                        if(this.a>0)
+                        this.a--;
+                    }
                 }
+
             })
      </script>
 
