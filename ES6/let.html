@@ -20,6 +20,8 @@
      <script>
 
 
+
+
             let app = new Vue({
                 el: '#app',
                 data: {
@@ -32,7 +34,18 @@
                         if(this.a>0)
                         this.a--;
                     }
+                },
+                computed:{
+                },
+                watch:{
+
+                },
+                filters:{
+                    testfilter(){
+                        return 'test'
+                    }
                 }
+
 
             })
      </script>
