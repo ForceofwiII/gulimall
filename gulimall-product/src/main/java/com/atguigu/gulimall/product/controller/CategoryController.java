@@ -86,10 +86,10 @@ public class CategoryController {
     //@RequiresPermissions("product:category:delete")
     public R delete(@RequestBody Long[] catIds){
 
-
+         //批量删除菜单项
 		//categoryService.removeByIds(Arrays.asList(catIds));
 
-        categoryService.removeMenuByIds(Arrays.asList(catIds));
+        categoryService.removeMenuByList(Arrays.asList(catIds));
 
         return R.ok();
     }

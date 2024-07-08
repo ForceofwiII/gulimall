@@ -118,6 +118,18 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         return  level1;
     }
 
+    @Override
+    public void removeMenuByList(List<Long> list) {
+
+
+        //todo 判断当前商品是否被引用
+
+
+        categoryDao.deleteBatchIds(list);
+
+
+    }
+
     //225,25,2
     private List<Long> findParentPath(Long catelogId,List<Long> paths){
         //1、收集当前节点id

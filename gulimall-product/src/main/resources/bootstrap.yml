@@ -1,0 +1,23 @@
+#spring:
+#  application:
+#    name: gulimall-product
+#  cloud:
+#    nacos:
+#
+#      discovery:
+#        namespace: dev
+#        server-addr: 192.168.101.128:8848
+##      config:
+##        namespace: dev
+##        group: gulimall-project
+##        file-extension: yaml
+##        server-addr: 192.168.101.128:8848
+##        refresh-enabled: true
+#  #        shared-configs:
+#  #          - data-id: logging-${spring.profiles.active}.yaml
+#  #            group: xuecheng-plus-common
+#  #            refresh: true
+#
+#
+#  profiles:
+#    active: dev #环境名
