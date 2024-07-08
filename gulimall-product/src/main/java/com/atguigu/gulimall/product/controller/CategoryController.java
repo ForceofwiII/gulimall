@@ -27,10 +27,10 @@ public class CategoryController {
     /**
      * 查出所有分类以及子分类，以树形结构组装起来
      */
-    @RequestMapping("/list/tree")
+    @RequestMapping("/list/tree") //查询所有商品的父子关系
     public R list(){
 
-        List<CategoryEntity> entities = categoryService.listWithTree();
+        List<CategoryEntity> entities = categoryService.listWithTrees();
 
 
         return R.ok().put("data", entities);

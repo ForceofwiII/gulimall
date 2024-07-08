@@ -25,8 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service("categoryService")
 public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity> implements CategoryService {
 
-//    @Autowired
-//    CategoryDao categoryDao;
+    @Autowired
+    CategoryDao categoryDao;
 
     @Autowired
     CategoryBrandRelationService categoryBrandRelationService;
@@ -93,6 +93,29 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     public void updateCascade(CategoryEntity category) {
         this.updateById(category);
         categoryBrandRelationService.updateCategory(category.getCatId(),category.getName());
+    }
+
+    @Override
+    public List<CategoryEntity> listWithTrees() {
+
+        //查出所有分类
+        List<CategoryEntity> all = categoryDao.selectList(null);
+
+
+
+        //组装成父子的树形结构
+        //找到所有的一级分类
+        List<CategoryEntity> level1 = all.stream().filter((o) -> {
+            return o.getParentCid() == 0;
+        }).map((o)->{
+            o.setChildren(getChildrens(o,all)); //获得当前元素的子元素
+            return o;
+        }).sorted(((o1, o2) -> {
+            return (o1.getSort()==null?0: o1.getSort()) - (o2.getSort()==null?0:o2.getSort());
+        })).collect(Collectors.toList());
+
+
+        return  level1;
     }
 
     //225,25,2
