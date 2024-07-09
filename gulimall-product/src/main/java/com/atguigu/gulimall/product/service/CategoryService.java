@@ -36,5 +36,7 @@ public interface CategoryService extends IService<CategoryEntity> {
     List<CategoryEntity> listWithTrees();
 
     void removeMenuByList(List<Long> list);
+
+    void insertOrUpdate(CategoryEntity category);
 }
 

@@ -130,6 +130,18 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     }
 
+    @Override
+    public void insertOrUpdate(CategoryEntity category) {
+
+        if(category.getCatId() == null){
+            this.save(category);}
+
+        else{
+            this.updateById(category);
+        }
+
+    }
+
     //225,25,2
     private List<Long> findParentPath(Long catelogId,List<Long> paths){
         //1、收集当前节点id
