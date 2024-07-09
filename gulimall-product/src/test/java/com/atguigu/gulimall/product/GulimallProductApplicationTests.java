@@ -1,5 +1,9 @@
 package com.atguigu.gulimall.product;
 
+import com.aliyun.oss.ClientException;
+import com.aliyun.oss.OSS;
+import com.aliyun.oss.OSSClientBuilder;
+import com.aliyun.oss.OSSException;
 import com.atguigu.gulimall.product.entity.BrandEntity;
 import com.atguigu.gulimall.product.entity.CategoryEntity;
 import com.atguigu.gulimall.product.service.BrandService;
@@ -12,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -69,6 +74,46 @@ public class GulimallProductApplicationTests {
 //            System.out.println(item);
 //        });
 
+    }
+
+    @Test
+    public void upload(){
+        // Endpoint以华东1（杭州）为例，其它Region请按实际情况填写。
+        String endpoint = "oss-cn-guangzhou.aliyuncs.com";
+        // 从环境变量中获取访问凭证。运行本代码示例之前，请确保已设置环境变量OSS_ACCESS_KEY_ID和OSS_ACCESS_KEY_SECRET。
+        // EnvironmentVariableCredentialsProvider credentialsProvider = CredentialsProviderFactory.newEnvironmentVariableCredentialsProvider();
+        String accessKeyId = "LTAI5tJ3SXtfsupUehsQUkPn";
+        String accessKeySecret="lGRRmGcFqPebfMxByMpdh0sR05XBYR";
+
+
+        // 填写Bucket名称，例如examplebucket。
+        String bucketName = "gulimall-fow";
+        // 填写Object完整路径，例如exampledir/exampleobject.txt。Object完整路径中不能包含Bucket名称。
+        String objectName = "C:\\Users\\a3216\\Desktop\\图片\\nadu.jpg";
+
+        // 创建OSSClient实例。
+        OSS ossClient = new OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret);
+
+        try {
+            String content = "Hello OSS";
+            ossClient.putObject(bucketName, objectName, new ByteArrayInputStream(content.getBytes()));
+        } catch (OSSException oe) {
+            System.out.println("Caught an OSSException, which means your request made it to OSS, "
+                    + "but was rejected with an error response for some reason.");
+            System.out.println("Error Message:" + oe.getErrorMessage());
+            System.out.println("Error Code:" + oe.getErrorCode());
+            System.out.println("Request ID:" + oe.getRequestId());
+            System.out.println("Host ID:" + oe.getHostId());
+        } catch (ClientException ce) {
+            System.out.println("Caught an ClientException, which means the client encountered "
+                    + "a serious internal problem while trying to communicate with OSS, "
+                    + "such as not being able to access the network.");
+            System.out.println("Error Message:" + ce.getMessage());
+        } finally {
+            if (ossClient != null) {
+                ossClient.shutdown();
+            }
+        }
     }
 
 }
