@@ -1,0 +1,24 @@
+#微服务配置
+spring:
+  application:
+    name: gulimall-third-party
+  cloud:
+    nacos:
+      discovery:
+        namespace: dev
+
+        server-addr: 192.168.101.128:8848
+      config:
+        namespace: dev
+        group: gulimall-project
+        file-extension: yaml
+        server-addr: 192.168.101.128:8848
+        ext-config:
+          - data-id: oss.yaml
+            group: gulimall-project
+
+            refresh: true
+
+
+  profiles:
+    active: dev #环境名

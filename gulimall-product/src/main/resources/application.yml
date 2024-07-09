@@ -11,6 +11,12 @@ spring:
       discovery:
         server-addr: 192.168.101.128:8848
         namespace: dev
+    alicloud:
+      access-key: "LTAI5tJ3SXtfsupUehsQUkPn"
+      secret-key: "lGRRmGcFqPebfMxByMpdh0sR05XBYR"
+      oss:
+        endpoint: "oss-cn-guangzhou.aliyuncs.com"
+
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
 
