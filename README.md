@@ -1,2 +1,1 @@
-# gulimall
-谷粒商城
+全栈项目谷粒商城，前后端分离，前端基于Vue+ElementUI，后端基于SpringBoot+MybatisPlus+Mysql+Redis+ElasticSearch，具备商城所有功能（注册（社交登录）、登录、上架、检索、购物车、订单、支付、秒杀），项目框架由renrenfast开源项目搭建。项目中使用到SpringCache，SpringSession，Rabbitmq，SpringGateway+Nginx，Openfeign，alibaba-nacos做分布式注册中心和配置中心，alibaba-seata做分布式事务控制，redisson做布式锁
