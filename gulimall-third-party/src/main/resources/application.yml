@@ -1,0 +1,19 @@
+#spring:
+#
+#  cloud:
+#
+#    alicloud:
+#      access-key: "LTAI5tJ3SXtfsupUehsQUkPn"
+#      secret-key: "lGRRmGcFqPebfMxByMpdh0sR05XBYR"
+#      oss:
+#       endpoint: "oss-cn-guangzhou.aliyuncs.com"
+#       bucket: "gulimall-fow"
+
+#
+#  application:
+#    name: gulimall-third-party
+
+server:
+  port: 30000
+
+
