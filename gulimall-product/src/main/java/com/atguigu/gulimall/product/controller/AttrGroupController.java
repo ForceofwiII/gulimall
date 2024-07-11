@@ -92,7 +92,7 @@ public class AttrGroupController {
                   @PathVariable("catelogId") Long catelogId){
 //        PageUtils page = attrGroupService.queryPage(params);
 
-        PageUtils page = attrGroupService.queryPage(params,catelogId);
+        PageUtils page = attrGroupService.queryPages(params,catelogId);
 
         return R.ok().put("page", page);
     }
@@ -122,7 +122,7 @@ public class AttrGroupController {
     @RequestMapping("/save")
     //@RequiresPermissions("product:attrgroup:save")
     public R save(@RequestBody AttrGroupEntity attrGroup){
-		attrGroupService.save(attrGroup);
+		attrGroupService.insert(attrGroup);
 
         return R.ok();
     }
