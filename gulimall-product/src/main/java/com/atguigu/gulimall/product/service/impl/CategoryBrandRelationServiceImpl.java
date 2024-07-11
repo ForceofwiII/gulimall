@@ -89,4 +89,20 @@ public class CategoryBrandRelationServiceImpl extends ServiceImpl<CategoryBrandR
         return collect;
     }
 
+    @Override
+    public void saveByid(CategoryBrandRelationEntity categoryBrandRelation) {
+        Long brandId = categoryBrandRelation.getBrandId();
+        Long catelogId = categoryBrandRelation.getCatelogId();
+        //1、查询详细名字
+        BrandEntity brandEntity = brandDao.selectById(brandId);
+        CategoryEntity categoryEntity = categoryDao.selectById(catelogId);
+        String brandName = brandEntity.getName();
+        String catelogName = categoryEntity.getName();
+        categoryBrandRelation.setBrandName(brandName);
+        categoryBrandRelation.setCatelogName(catelogName);
+        this.save(categoryBrandRelation);
+
+
+    }
+
 }

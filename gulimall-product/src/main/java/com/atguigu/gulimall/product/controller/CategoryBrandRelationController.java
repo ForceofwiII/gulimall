@@ -40,6 +40,8 @@ public class CategoryBrandRelationController {
                 new QueryWrapper<CategoryBrandRelationEntity>().eq("brand_id",brandId)
         );
 
+
+
         return R.ok().put("data", data);
     }
 
@@ -98,7 +100,7 @@ public class CategoryBrandRelationController {
     public R save(@RequestBody CategoryBrandRelationEntity categoryBrandRelation){
 
 
-		categoryBrandRelationService.saveDetail(categoryBrandRelation);
+		categoryBrandRelationService.saveByid(categoryBrandRelation);
 
         return R.ok();
     }
