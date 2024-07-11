@@ -266,4 +266,15 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         return pageUtils;
     }
 
+    @Override
+    public void saveAttrs(AttrVo attr) {
+        AttrEntity attrEntity = new AttrEntity();
+        BeanUtils.copyProperties(attr,attrEntity);
+        this.save(attrEntity);
+        AttrAttrgroupRelationEntity attrAttrgroupRelationEntity = new AttrAttrgroupRelationEntity();
+        attrAttrgroupRelationEntity.setAttrId(attrEntity.getAttrId());
+        attrAttrgroupRelationEntity.setAttrGroupId(attr.getAttrGroupId());
+        relationDao.insert(attrAttrgroupRelationEntity);
+    }
+
 }

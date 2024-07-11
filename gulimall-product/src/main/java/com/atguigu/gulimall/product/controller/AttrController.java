@@ -84,7 +84,7 @@ public class AttrController {
     @RequestMapping("/save")
     //@RequiresPermissions("product:attr:save")
     public R save(@RequestBody AttrVo attr){
-		attrService.saveAttr(attr);
+		attrService.saveAttrs(attr);
 
         return R.ok();
     }
