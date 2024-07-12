@@ -274,16 +274,30 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         AttrEntity attrEntity = new AttrEntity();
         BeanUtils.copyProperties(attr,attrEntity);
         this.save(attrEntity);
-        AttrAttrgroupRelationEntity attrAttrgroupRelationEntity = new AttrAttrgroupRelationEntity();
-        attrAttrgroupRelationEntity.setAttrId(attrEntity.getAttrId());
-        attrAttrgroupRelationEntity.setAttrGroupId(attr.getAttrGroupId());
-        relationDao.insert(attrAttrgroupRelationEntity);
+        if(attr.getAttrType()==1){
+            AttrAttrgroupRelationEntity attrAttrgroupRelationEntity = new AttrAttrgroupRelationEntity();
+            attrAttrgroupRelationEntity.setAttrId(attrEntity.getAttrId());
+            attrAttrgroupRelationEntity.setAttrGroupId(attr.getAttrGroupId());
+            relationDao.insert(attrAttrgroupRelationEntity);
+        }
+
     }
 
     @Override
     public PageUtils queryAttrPage(Map<String, Object> params, Long catelogId, String type) {
 
+
+        int a=0;
         QueryWrapper<AttrEntity> wrapper = new QueryWrapper<AttrEntity>();
+        if(type.equals("base"))
+        {
+            a=1;
+
+        }
+        else {
+            a=0;
+        }
+        wrapper.eq("attr_type",a);
         String key = (String) params.get("key");
         if(!StringUtils.isEmpty(key)){
             wrapper.and((w)->{
@@ -358,9 +372,11 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         BeanUtils.copyProperties(attr,attrEntity);
         this.updateById(attrEntity);
         //修改关联关系
+         if(attr.getAttrType()==1){
+             relationDao.updateByAttrId(attr.getAttrId(),attr.getAttrGroupId());
+         }
 
 
-        relationDao.updateByAttrId(attr.getAttrId(),attr.getAttrGroupId());
 
     }
 
