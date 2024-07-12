@@ -4,6 +4,8 @@ import com.atguigu.gulimall.product.entity.AttrAttrgroupRelationEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -19,4 +21,11 @@ public interface AttrAttrgroupRelationDao extends BaseMapper<AttrAttrgroupRelati
 
     void deleteBatchRelation(@Param("entities") List<AttrAttrgroupRelationEntity> entities);
 
+
+    @Select("select * from pms_attr_attrgroup_relation where attr_id = #{attrId}")
+    AttrAttrgroupRelationEntity selectByAttrId(Long attrId);
+
+
+    @Update("update pms_attr_attrgroup_relation set attr_group_id = #{attrGroupId} where attr_id = #{attrId}")
+    void updateByAttrId(@Param("attrId")Long  attrId, @Param("attrGroupId") Long attrGroupId);
 }

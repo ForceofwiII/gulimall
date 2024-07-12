@@ -50,7 +50,7 @@ public class AttrController {
                           @PathVariable("catelogId") Long catelogId,
                           @PathVariable("attrType")String type){
 
-        PageUtils page = attrService.queryBaseAttrPage(params,catelogId,type);
+        PageUtils page = attrService.queryAttrPage(params,catelogId,type);
         return R.ok().put("page", page);
     }
 
@@ -73,7 +73,7 @@ public class AttrController {
     //@RequiresPermissions("product:attr:info")
     public R info(@PathVariable("attrId") Long attrId){
 		//AttrEntity attr = attrService.getById(attrId);
-        AttrRespVo respVo = attrService.getAttrInfo(attrId);
+        AttrRespVo respVo = attrService.getAttrInfos(attrId);
 
         return R.ok().put("attr", respVo);
     }
@@ -98,7 +98,7 @@ public class AttrController {
     @RequestMapping("/update")
     //@RequiresPermissions("product:attr:update")
     public R update(@RequestBody AttrVo attr){
-		attrService.updateAttr(attr);
+		attrService.updateAttrs(attr);
 
         return R.ok();
     }

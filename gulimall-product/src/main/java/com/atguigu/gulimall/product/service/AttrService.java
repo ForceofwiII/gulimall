@@ -36,5 +36,11 @@ public interface AttrService extends IService<AttrEntity> {
     PageUtils getNoRelationAttr(Map<String, Object> params, Long attrgroupId);
 
     void saveAttrs(AttrVo attr);
+
+    PageUtils queryAttrPage(Map<String, Object> params, Long catelogId, String type);
+
+    AttrRespVo getAttrInfos(Long attrId);
+
+    void updateAttrs(AttrVo attr);
 }
 
