@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -139,27 +140,27 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
         //根据分类id查出所有属性分组
         List<AttrGroupEntity> groups = attrGroupDao.selectList(new QueryWrapper<AttrGroupEntity>().eq("catelog_id",catelogId));
 
-        List<Long> groupIds = groups.stream().map((o) -> {
-            return o.getAttrGroupId();
-        }).collect(Collectors.toList());
+
 
         //查出所有分组对应的属性
-        List<AttrGroupWithAttrsVo> a = new ArrayList<>();
-        groups.forEach((o)->{
+        List<AttrGroupWithAttrsVo> attrGroupWithAttrsVoList = new ArrayList<>();
+        groups.forEach((group) -> {
             AttrGroupWithAttrsVo attrsVo = new AttrGroupWithAttrsVo();
-            BeanUtils.copyProperties(o,attrsVo);
+            BeanUtils.copyProperties(group, attrsVo);
 
-            List<Long> longs = relationDao.selectByGroupId(o.getAttrGroupId());
-            List<AttrEntity> attrs = attrDao.selectBatchIds(longs);
-            attrsVo.setAttrs(attrs);
+            List<Long> attrIds = relationDao.selectByGroupId(group.getAttrGroupId());
+            if (attrIds != null && !attrIds.isEmpty()) {
+                List<AttrEntity> attrs = attrDao.selectBatchIds(attrIds);
+                attrsVo.setAttrs(attrs);
+            } else {
+                attrsVo.setAttrs(Collections.emptyList());
+            }
 
-
-
-            a.add(attrsVo);
+            attrGroupWithAttrsVoList.add(attrsVo);
         });
 
+        return attrGroupWithAttrsVoList;
 
-        return a;
     }
 
 }
