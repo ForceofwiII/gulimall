@@ -2,6 +2,8 @@ package com.atguigu.gulimall.product.service.impl;
 
 import com.atguigu.common.utils.PageUtils;
 import com.atguigu.common.utils.Query;
+import com.atguigu.gulimall.product.dao.AttrAttrgroupRelationDao;
+import com.atguigu.gulimall.product.dao.AttrDao;
 import com.atguigu.gulimall.product.entity.AttrEntity;
 import com.atguigu.gulimall.product.service.AttrService;
 import com.atguigu.gulimall.product.vo.AttrGroupWithAttrsVo;
@@ -9,6 +11,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,6 +34,12 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
 
     @Autowired
     private AttrGroupDao attrGroupDao;
+
+    @Autowired
+    AttrAttrgroupRelationDao relationDao;
+
+    @Autowired
+    AttrDao attrDao;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -123,6 +132,34 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
     @Override
     public void insert(AttrGroupEntity attrGroup) {
         attrGroupDao.insert(attrGroup);
+    }
+
+    @Override
+    public List<AttrGroupWithAttrsVo> getAttrGroupsWithAttrsByCatelogId(Long catelogId) {
+        //根据分类id查出所有属性分组
+        List<AttrGroupEntity> groups = attrGroupDao.selectList(new QueryWrapper<AttrGroupEntity>().eq("catelog_id",catelogId));
+
+        List<Long> groupIds = groups.stream().map((o) -> {
+            return o.getAttrGroupId();
+        }).collect(Collectors.toList());
+
+        //查出所有分组对应的属性
+        List<AttrGroupWithAttrsVo> a = new ArrayList<>();
+        groups.forEach((o)->{
+            AttrGroupWithAttrsVo attrsVo = new AttrGroupWithAttrsVo();
+            BeanUtils.copyProperties(o,attrsVo);
+
+            List<Long> longs = relationDao.selectByGroupId(o.getAttrGroupId());
+            List<AttrEntity> attrs = attrDao.selectBatchIds(longs);
+            attrsVo.setAttrs(attrs);
+
+
+
+            a.add(attrsVo);
+        });
+
+
+        return a;
     }
 
 }

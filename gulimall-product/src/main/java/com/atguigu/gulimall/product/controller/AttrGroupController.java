@@ -57,7 +57,7 @@ public class AttrGroupController {
 
         //1、查出当前分类下的所有属性分组，
         //2、查出每个属性分组的所有属性
-       List<AttrGroupWithAttrsVo> vos =  attrGroupService.getAttrGroupWithAttrsByCatelogId(catelogId);
+       List<AttrGroupWithAttrsVo> vos =  attrGroupService.getAttrGroupsWithAttrsByCatelogId(catelogId);
        return R.ok().put("data",vos);
     }
 
