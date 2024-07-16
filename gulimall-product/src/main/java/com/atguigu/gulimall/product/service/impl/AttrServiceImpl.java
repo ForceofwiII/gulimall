@@ -18,10 +18,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -316,7 +313,7 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
             BeanUtils.copyProperties(o, attrRespVo);
 
             AttrAttrgroupRelationEntity attrAttrgroupRelationEntity = relationDao.selectByAttrId(o.getAttrId());
-            if(attrAttrgroupRelationEntity!=null){
+            if(attrAttrgroupRelationEntity!=null && attrAttrgroupRelationEntity.getAttrGroupId()!=null){
                 AttrGroupEntity group = attrGroupDao.selectById(attrAttrgroupRelationEntity.getAttrGroupId());
 
                 attrRespVo.setGroupName(group.getAttrGroupName());
@@ -349,6 +346,7 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
             AttrGroupEntity group = attrGroupDao.selectById(attrAttrgroupRelationEntity.getAttrGroupId());
             if(group!=null){
                 attrRespVo.setGroupName(group.getAttrGroupName());
+
             }
         }
          //设置分类信息
@@ -377,6 +375,62 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
          }
 
 
+
+    }
+
+    @Override
+    public List<AttrEntity> getRelationAttrs(Long attrgroupId) {
+
+       List<Long>ids =  relationDao.selectByGroupId(attrgroupId);
+       if(ids==null || ids.size()==0){
+           return null;
+       }
+
+        List<AttrEntity> attrEntities = attrDao.selectBatchIds(ids);
+
+        return attrEntities;
+    }
+
+    @Override //查询当前属性分组没有关联的属性
+    public PageUtils getNoRelationAttrs(Map<String, Object> params, Long attrgroupId) {
+        //只能在当前分类下
+        AttrGroupEntity group = attrGroupDao.selectById(attrgroupId);
+        Long catelogId = group.getCatelogId();
+        List<Long> attrIds = new ArrayList<>();
+        //只能在当前分类的所有分组中没有的里面选择
+        List<AttrGroupEntity> attrGroupEntities = attrGroupDao.selectList(new QueryWrapper<AttrGroupEntity>().eq("catelog_id", catelogId));
+        if (attrGroupEntities != null || attrGroupEntities.size() > 0) {
+            List<Long> collect = attrGroupEntities.stream().map((item) -> {
+                return item.getAttrGroupId();
+            }).collect(Collectors.toList());
+
+            //这些分组关联的所有属性
+            List<AttrAttrgroupRelationEntity> relationEntities = relationDao.selectList(new QueryWrapper<AttrAttrgroupRelationEntity>().in("attr_group_id", collect));
+            if (relationEntities != null || relationEntities.size() > 0) {
+                attrIds = relationEntities.stream().map((item) -> {
+                    return item.getAttrId();
+                }).collect(Collectors.toList());
+            }
+
+        }
+
+
+        QueryWrapper<AttrEntity> wrapper = new QueryWrapper<AttrEntity>();
+        wrapper.eq("catelog_id", catelogId).eq("attr_type", 1).notIn(attrIds.size() > 0 , "attr_id", attrIds);
+        String key = (String) params.get("key");
+        if (!StringUtils.isEmpty(key)) {
+            wrapper.and((w) -> {
+                w.eq("attr_id", key).or().like("attr_name", key);
+            });
+
+
+        }
+
+        IPage<AttrEntity> page = this.page(new Query<AttrEntity>().getPage(params), wrapper);
+        PageUtils pageUtils = new PageUtils(page);
+
+
+        return pageUtils;
 
     }
 

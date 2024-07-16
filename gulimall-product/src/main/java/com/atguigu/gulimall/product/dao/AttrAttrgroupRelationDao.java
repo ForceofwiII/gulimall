@@ -28,4 +28,7 @@ public interface AttrAttrgroupRelationDao extends BaseMapper<AttrAttrgroupRelati
 
     @Update("update pms_attr_attrgroup_relation set attr_group_id = #{attrGroupId} where attr_id = #{attrId}")
     void updateByAttrId(@Param("attrId")Long  attrId, @Param("attrGroupId") Long attrGroupId);
+
+    @Select("select attr_id from pms_attr_attrgroup_relation where attr_group_id = #{attrgroupId}")
+    List<Long> selectByGroupId(Long attrgroupId);
 }

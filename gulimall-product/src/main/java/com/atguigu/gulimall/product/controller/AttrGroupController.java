@@ -65,7 +65,7 @@ public class AttrGroupController {
     ///product/attrgroup/{attrgroupId}/attr/relation
     @GetMapping("/{attrgroupId}/attr/relation")
     public R attrRelation(@PathVariable("attrgroupId") Long attrgroupId){
-        List<AttrEntity> entities =  attrService.getRelationAttr(attrgroupId);
+        List<AttrEntity> entities =  attrService.getRelationAttrs(attrgroupId);
         return R.ok().put("data",entities);
     }
 
@@ -73,7 +73,7 @@ public class AttrGroupController {
     @GetMapping("/{attrgroupId}/noattr/relation")
     public R attrNoRelation(@PathVariable("attrgroupId") Long attrgroupId,
                             @RequestParam Map<String, Object> params){
-        PageUtils page = attrService.getNoRelationAttr(params,attrgroupId);
+        PageUtils page = attrService.getNoRelationAttrs(params,attrgroupId);
         return R.ok().put("page",page);
     }
 
