@@ -89,4 +89,41 @@ public class SkuFullReductionServiceImpl extends ServiceImpl<SkuFullReductionDao
         memberPriceService.saveBatch(collect);
     }
 
+    @Override
+    public void saveSkuReductions(SkuReductionTo reductionTo) {
+
+        SkuLadderEntity skuLadderEntity = new SkuLadderEntity();
+        BeanUtils.copyProperties(reductionTo,skuLadderEntity);
+        skuLadderEntity.setAddOther(reductionTo.getCountStatus());
+
+
+            skuLadderService.save(skuLadderEntity);
+
+
+        SkuFullReductionEntity skuFullReductionEntity = new SkuFullReductionEntity();
+        BeanUtils.copyProperties(reductionTo,skuFullReductionEntity);
+        this.save(skuFullReductionEntity);
+
+
+        List<MemberPrice> memberPrice = reductionTo.getMemberPrice();
+        if(memberPrice!=null && memberPrice.size()>0){
+            memberPriceService.saveBatch(memberPrice.stream().map(item -> {
+                MemberPriceEntity priceEntity = new MemberPriceEntity();
+
+                priceEntity.setSkuId(reductionTo.getSkuId());
+                priceEntity.setMemberLevelId(item.getId());
+                priceEntity.setMemberLevelName(item.getName());
+                priceEntity.setMemberPrice(item.getPrice());
+                priceEntity.setAddOther(1);
+                return priceEntity;
+            }).collect(Collectors.toList()));
+        }
+
+
+
+
+
+
+    }
+
 }

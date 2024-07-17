@@ -7,6 +7,7 @@ import com.atguigu.common.utils.Query;
 import com.atguigu.gulimall.product.dao.SpuInfoDescDao;
 import com.atguigu.gulimall.product.entity.*;
 //import com.atguigu.gulimall.product.feign.CouponFeignService;
+import com.atguigu.gulimall.product.feign.CouponFeignService;
 import com.atguigu.gulimall.product.service.*;
 import com.atguigu.gulimall.product.vo.*;
 import org.springframework.beans.BeanUtils;
@@ -56,8 +57,8 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
     SpuInfoDescDao spuInfoDescDao;
 
-//    @Autowired
-//    CouponFeignService couponFeignService;
+    @Autowired
+    CouponFeignService couponFeignService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -300,7 +301,13 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
 
 
-        //保存spu的积分信息
+        //保存spu的积分信息  远程调用
+        Bounds bounds = vo.getBounds();
+        SpuBoundTo spuBoundTo = new SpuBoundTo();
+        BeanUtils.copyProperties(bounds,spuBoundTo);
+        spuBoundTo.setSpuId(spuInfoEntity.getId());
+        couponFeignService.saveSpuBounds(spuBoundTo);
+
 
         //保存spu的sku信息
 
@@ -338,6 +345,32 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                     return skuImagesEntity;
 
                 }).collect(Collectors.toList());
+                skuImagesService.saveBatch(collect1);
+
+
+                //5.3 sku的销售属性
+                List<Attr> attr = sku.getAttr();
+                List<SkuSaleAttrValueEntity> collect2 = attr.stream().map((o) -> {
+                    SkuSaleAttrValueEntity skuSaleAttrValueEntity = new SkuSaleAttrValueEntity();
+                    BeanUtils.copyProperties(o, skuSaleAttrValueEntity);
+                    skuSaleAttrValueEntity.setSkuId(skuInfoEntity.getSkuId());
+
+                    return skuSaleAttrValueEntity;
+
+                }).collect(Collectors.toList());
+
+                skuSaleAttrValueService.saveBatch(collect2);
+
+                //5.4 sku 优惠信息 远程调用
+
+                SkuReductionTo skuReductionTo = new SkuReductionTo();
+                BeanUtils.copyProperties(sku,skuReductionTo);
+                skuReductionTo.setSkuId(skuInfoEntity.getSkuId());
+
+
+
+                couponFeignService.saveSkuReduction(skuReductionTo);
+
 
 
             });
@@ -347,9 +380,9 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
 
 
-        //5.3 sku的销售属性
 
-        //5.4 sku 优惠信息 远程调用
+
+
 
 
     }

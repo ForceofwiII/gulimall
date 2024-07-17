@@ -21,5 +21,6 @@ public interface SkuFullReductionService extends IService<SkuFullReductionEntity
     void saveSkuReduction(SkuReductionTo reductionTo);
 
 
+    void saveSkuReductions(SkuReductionTo reductionTo);
 }
 
