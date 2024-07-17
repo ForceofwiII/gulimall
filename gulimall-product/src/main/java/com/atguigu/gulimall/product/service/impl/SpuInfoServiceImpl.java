@@ -4,6 +4,7 @@ import com.atguigu.common.to.SkuReductionTo;
 import com.atguigu.common.to.SpuBoundTo;
 import com.atguigu.common.utils.PageUtils;
 import com.atguigu.common.utils.Query;
+import com.atguigu.gulimall.product.dao.SpuInfoDescDao;
 import com.atguigu.gulimall.product.entity.*;
 //import com.atguigu.gulimall.product.feign.CouponFeignService;
 import com.atguigu.gulimall.product.service.*;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +51,10 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
     @Autowired
     SkuSaleAttrValueService skuSaleAttrValueService;
+
+    @Autowired
+
+    SpuInfoDescDao spuInfoDescDao;
 
 //    @Autowired
 //    CouponFeignService couponFeignService;
@@ -239,6 +245,125 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         );
 
         return new PageUtils(page);
+    }
+
+    @Override
+    @Transactional
+    public void saveSpuInfos(SpuSaveVo vo) {
+        //保存spu基本信息  spuinfo
+
+        SpuInfoEntity spuInfoEntity = new SpuInfoEntity();
+        BeanUtils.copyProperties(vo,spuInfoEntity);
+        spuInfoEntity.setCreateTime(new Date());
+        spuInfoEntity.setUpdateTime(new Date());
+        this.saveBaseSpuInfos(spuInfoEntity);
+
+
+        //保存spu图片描述    infodesc
+
+        List<String> decript = vo.getDecript();
+        SpuInfoDescEntity spuInfoDescEntity = new SpuInfoDescEntity();
+        spuInfoDescEntity.setSpuId(spuInfoEntity.getId());
+        spuInfoDescEntity.setDecript(String.join(",",decript));
+        this.saveSpuInfoDecr(spuInfoDescEntity);
+
+
+
+        //保存spu图片集   images
+
+        
+
+
+        List<String> images = vo.getImages();
+        imagesService.saveImages(spuInfoEntity.getId(),images);
+
+
+
+        //保存spu基本属性  attrvalue
+
+
+        List<BaseAttrs> baseAttrs = vo.getBaseAttrs();
+        List<ProductAttrValueEntity> collect = baseAttrs.stream().map((o) -> {
+            ProductAttrValueEntity productAttrValueEntity = new ProductAttrValueEntity();
+            productAttrValueEntity.setAttrId(o.getAttrId());
+            AttrEntity byId = attrService.getById(o.getAttrId());
+            productAttrValueEntity.setAttrName(byId.getAttrName());
+            productAttrValueEntity.setAttrValue(o.getAttrValues());
+            productAttrValueEntity.setQuickShow(o.getShowDesc());
+
+            return productAttrValueEntity;
+
+
+        }).collect(Collectors.toList());
+
+        attrValueService.saveBatch(collect);
+
+
+
+        //保存spu的积分信息
+
+        //保存spu的sku信息
+
+        //5.1 sku基本信息
+
+        List<Skus> skus = vo.getSkus();
+        if(skus !=null || skus.size()>0){
+
+            skus.forEach(sku->{
+
+                String defaultImg="";
+                for (Images image : sku.getImages()) {
+                   if(image.getDefaultImg()==1){
+                       defaultImg=image.getImgUrl();
+                   }
+                }
+
+                SkuInfoEntity skuInfoEntity = new SkuInfoEntity();
+                BeanUtils.copyProperties(sku,skuInfoEntity);
+                skuInfoEntity.setBrandId(spuInfoEntity.getBrandId());
+                skuInfoEntity.setCatalogId(spuInfoEntity.getCatalogId());
+                skuInfoEntity.setSaleCount(0L);
+                skuInfoEntity.setSpuId(spuInfoEntity.getId());
+                skuInfoEntity.setSkuDefaultImg(defaultImg);
+
+
+                skuInfoService.save(skuInfoEntity);
+
+                //5.2 sku图片信息
+                List<SkuImagesEntity> collect1 = sku.getImages().stream().map(m -> {
+                    SkuImagesEntity skuImagesEntity = new SkuImagesEntity();
+                   skuImagesEntity.setId(skuInfoEntity.getSkuId());
+                   skuImagesEntity.setImgUrl(m.getImgUrl());
+                   skuImagesEntity.setDefaultImg(m.getDefaultImg());
+                    return skuImagesEntity;
+
+                }).collect(Collectors.toList());
+
+
+            });
+        }
+
+
+
+
+
+        //5.3 sku的销售属性
+
+        //5.4 sku 优惠信息 远程调用
+
+
+    }
+
+    private void saveSpuInfoDecr(SpuInfoDescEntity spuInfoDescEntity) {
+
+        spuInfoDescDao.insert(spuInfoDescEntity);
+
+    }
+
+    @Override
+    public void saveBaseSpuInfos(SpuInfoEntity spuInfoEntity) {
+
+        this.baseMapper.insert(spuInfoEntity);
     }
 
 
