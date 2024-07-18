@@ -344,6 +344,8 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                    skuImagesEntity.setDefaultImg(m.getDefaultImg());
                     return skuImagesEntity;
 
+                }).filter((o)->{
+                    return !StringUtils.isEmpty(o.getImgUrl());
                 }).collect(Collectors.toList());
                 skuImagesService.saveBatch(collect1);
 
@@ -367,9 +369,11 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
                 BeanUtils.copyProperties(sku,skuReductionTo);
                 skuReductionTo.setSkuId(skuInfoEntity.getSkuId());
 
+               if(skuReductionTo.getFullCount()>0 || skuReductionTo.getFullPrice().compareTo(new BigDecimal("0"))==1){
+                   couponFeignService.saveSkuReduction(skuReductionTo);
+               }
 
 
-                couponFeignService.saveSkuReduction(skuReductionTo);
 
 
 

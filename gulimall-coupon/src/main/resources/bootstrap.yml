@@ -1,5 +1,11 @@
 #微服务配置
 spring:
+  datasource:
+    username: root
+    password: root
+    url: jdbc:mysql://192.168.101.128:3306/gulimall_sms?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
   application:
     name: gulimall-coupon
   cloud:
@@ -8,11 +14,11 @@ spring:
         namespace: dev
 
         server-addr: 192.168.101.128:8848
-      config:
-        namespace: dev
-        group: gulimall-project
-        file-extension: yaml
-        server-addr: 192.168.101.128:8848
+#      config:
+#        namespace: dev
+#        group: gulimall-project
+#        file-extension: yaml
+#        server-addr: 192.168.101.128:8848
 #        ext-config:
 #          - data-id: mybatis-${spring.profiles.active}.yaml
 #            group: gulimall-common
@@ -20,8 +26,8 @@ spring:
 #            refresh: true
 
 
-  profiles:
-    active: dev #环境名
+#  profiles:
+#    active: dev #环境名
 
 
 
