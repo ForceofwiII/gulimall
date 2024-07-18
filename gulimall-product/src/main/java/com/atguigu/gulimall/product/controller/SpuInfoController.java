@@ -33,6 +33,7 @@ public class SpuInfoController {
     /**
      * 列表
      */
+    //根据条件分页查询
     @RequestMapping("/list")
     //@RequiresPermissions("product:spuinfo:list")
     public R list(@RequestParam Map<String, Object> params){
