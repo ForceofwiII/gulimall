@@ -7,6 +7,7 @@ import com.atguigu.gulimall.ware.entity.PurchaseDetailEntity;
 import com.atguigu.gulimall.ware.service.PurchaseDetailService;
 import com.atguigu.gulimall.ware.vo.PurchaseDoneVo;
 import com.atguigu.gulimall.ware.vo.PurchaseItemDoneVo;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -101,6 +102,7 @@ public class PurchaseServiceImpl extends ServiceImpl<PurchaseDao, PurchaseEntity
      * @param ids 采购单id
      */
     @Override
+    @Transactional
     public void received(List<Long> ids) {
         //1、确认当前采购单是新建或者已分配状态
         List<PurchaseEntity> collect = ids.stream().map(id -> {
@@ -174,6 +176,96 @@ public class PurchaseServiceImpl extends ServiceImpl<PurchaseDao, PurchaseEntity
         this.updateById(purchaseEntity);
 
 
+
+
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void mergePurchases(MergeVo mergeVo) {
+
+        List<Long> items = mergeVo.getItems();
+        Long purchaseId = mergeVo.getPurchaseId();
+        if(purchaseId==null){
+            //新建采购单
+            PurchaseEntity purchaseEntity = new PurchaseEntity();
+            purchaseEntity.setStatus(WareConstant.PurchaseStatusEnum.CREATED.getCode());
+            purchaseEntity.setCreateTime(new Date());
+            purchaseEntity.setUpdateTime(new Date());
+            this.save(purchaseEntity);
+            purchaseId = purchaseEntity.getId();
+        }
+
+        PurchaseEntity byId = this.getById(purchaseId);
+        if(byId.getStatus() != WareConstant.PurchaseStatusEnum.CREATED.getCode()){
+            throw new RuntimeException("采购单状态不对");
+
+        }
+
+        Long finalPurchaseId = purchaseId;
+
+        List<PurchaseDetailEntity> collect = items.stream().map(item -> {
+
+            PurchaseDetailEntity purchaseDetailEntity = new PurchaseDetailEntity();
+            purchaseDetailEntity.setId(item);
+            purchaseDetailEntity.setPurchaseId(finalPurchaseId);
+            purchaseDetailEntity.setStatus(WareConstant.PurchaseDetailStatusEnum.ASSIGNED.getCode());
+            return purchaseDetailEntity;
+
+
+        }).collect(Collectors.toList());
+
+        detailService.updateBatchById(collect);
+
+
+        PurchaseEntity purchaseEntity = new PurchaseEntity();
+        purchaseEntity.setId(purchaseId);
+        purchaseEntity.setUpdateTime(new Date());
+        this.updateById(purchaseEntity);
+
+
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void doned(PurchaseDoneVo doneVo) {
+        //改变采购单状态
+        Long id = doneVo.getId();
+
+
+
+
+        //改变采购项状态
+        Boolean flag = true;
+        List<PurchaseItemDoneVo> items = doneVo.getItems();
+        List<PurchaseDetailEntity> updates = new ArrayList<>();
+        for (PurchaseItemDoneVo item : items) {
+            if(item.getStatus() == WareConstant.PurchaseDetailStatusEnum.HASERROR.getCode()){
+                flag = false;}
+            else{
+                //将采购项入库
+                PurchaseDetailEntity byId = detailService.getById(item.getItemId());
+              wareSkuService.addStock(byId.getSkuId(),byId.getWareId(),byId.getSkuNum());
+
+
+
+
+            }
+
+            PurchaseDetailEntity detailEntity = new PurchaseDetailEntity();
+            detailEntity.setId(item.getItemId());
+            detailEntity.setStatus(item.getStatus());
+            updates.add(detailEntity);
+
+
+        }
+        detailService.updateBatchById(updates);
+
+        PurchaseEntity purchaseEntity = new PurchaseEntity();
+        purchaseEntity.setId(id);
+        purchaseEntity.setStatus(flag?WareConstant.PurchaseStatusEnum.FINISH.getCode():WareConstant.PurchaseStatusEnum.HASERROR.getCode());
+        purchaseEntity.setUpdateTime(new Date());
+        this.updateById(purchaseEntity);
 
 
     }

@@ -34,7 +34,7 @@ public class PurchaseController {
     @PostMapping("/done")
     public R finish(@RequestBody PurchaseDoneVo doneVo){
 
-        purchaseService.done(doneVo);
+        purchaseService.doned(doneVo);
 
         return R.ok();
     }
@@ -56,7 +56,7 @@ public class PurchaseController {
     @PostMapping("/merge")
     public R merge(@RequestBody MergeVo mergeVo){
 
-        purchaseService.mergePurchase(mergeVo);
+        purchaseService.mergePurchases(mergeVo);
         return R.ok();
     }
 

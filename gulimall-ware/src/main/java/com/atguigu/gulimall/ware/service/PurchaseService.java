@@ -32,5 +32,8 @@ public interface PurchaseService extends IService<PurchaseEntity> {
     void done(PurchaseDoneVo doneVo);
 
 
+    void mergePurchases(MergeVo mergeVo);
+
+    void doned(PurchaseDoneVo doneVo);
 }
 
