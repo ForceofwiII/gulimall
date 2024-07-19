@@ -25,8 +25,8 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
     @Autowired
     WareSkuDao wareSkuDao;
 
-//    @Autowired
-//    ProductFeignService productFeignService;
+    @Autowired
+    ProductFeignService productFeignService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -65,18 +65,18 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
             skuEntity.setWareId(wareId);
             skuEntity.setStockLocked(0);
             //TODO 远程查询sku的名字，如果失败，整个事务无需回滚
-            //1、自己catch异常
-            //TODO 还可以用什么办法让异常出现以后不回滚？高级
-//            try {
-//                R info = productFeignService.info(skuId);
-//                Map<String,Object> data = (Map<String, Object>) info.get("skuInfo");
-//
-//                if(info.getCode() == 0){
-//                    skuEntity.setSkuName((String) data.get("skuName"));
-//                }
-//            }catch (Exception e){
-//
-//            }
+           // 1、自己catch异常
+           // TODO 还可以用什么办法让异常出现以后不回滚？高级
+            try {
+                R info = productFeignService.info(skuId);
+                Map<String,Object> data = (Map<String, Object>) info.get("skuInfo");
+
+
+                    skuEntity.setSkuName((String) data.get("skuName"));
+
+            }catch (Exception e){
+
+            }
 
 
             wareSkuDao.insert(skuEntity);
