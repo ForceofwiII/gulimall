@@ -9,5 +9,5 @@ public interface ProudctSaveService {
 
 
 
-    void saveProduct(List<SkuEsModel> models) throws IOException;
+    boolean saveProduct(List<SkuEsModel> models) throws IOException;
 }

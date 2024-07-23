@@ -1,6 +1,7 @@
 package com.atguigu.gulimall.search.controller;
 
 
+import com.atguigu.common.exception.BizCodeEnume;
 import com.atguigu.common.to.es.SkuEsModel;
 import com.atguigu.common.utils.R;
 import com.atguigu.gulimall.search.service.ProudctSaveService;
@@ -23,13 +24,25 @@ public class EsSaveController {
 
 
     @PostMapping("/product")
-    public R up(@RequestBody List<SkuEsModel> models) throws IOException {
+    public R up(@RequestBody List<SkuEsModel> models)  {
+    boolean  b=false;
+
+   try{
+        b= proudctSaveService.saveProduct(models);
+   }
+   catch (Exception e){
 
 
+       return R.error(BizCodeEnume.PROUDCT_UP_EXCEPTION.getCode(), BizCodeEnume.PROUDCT_UP_EXCEPTION.getMsg());
 
-       proudctSaveService.saveProduct(models);
+   }
 
+       if(b)
         return  R.ok();
+       else {
+           return R.error(BizCodeEnume.PROUDCT_UP_EXCEPTION.getCode(), BizCodeEnume.PROUDCT_UP_EXCEPTION.getMsg());
+
+       }
 
     }
 

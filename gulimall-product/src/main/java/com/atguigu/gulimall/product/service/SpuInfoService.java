@@ -5,6 +5,7 @@ import com.atguigu.gulimall.product.vo.SpuSaveVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.atguigu.gulimall.product.entity.SpuInfoEntity;
 
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -31,6 +32,6 @@ public interface SpuInfoService extends IService<SpuInfoEntity> {
     void saveBaseSpuInfos(SpuInfoEntity spuInfoEntity);
 
 
-    void up(Long id);
+    void up(Long id) throws IOException;
 }
 

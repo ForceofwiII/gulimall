@@ -5,7 +5,7 @@ spring:
     url: jdbc:mysql://192.168.101.128:3306/gulimall_pms?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
     driver-class-name: com.mysql.cj.jdbc.Driver
   application:
-    name: gulimall-product
+    name: gulimall-search
   cloud:
     nacos:
       discovery:

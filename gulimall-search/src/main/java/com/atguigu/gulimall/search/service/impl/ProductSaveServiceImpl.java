@@ -1,10 +1,16 @@
 package com.atguigu.gulimall.search.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.atguigu.common.to.es.SkuEsModel;
 import com.atguigu.gulimall.search.config.GulimallElasticSearchConfig;
+import com.atguigu.gulimall.search.constant.EsConstant;
 import com.atguigu.gulimall.search.service.ProudctSaveService;
+import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.xcontent.XContentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +26,7 @@ public class ProductSaveServiceImpl implements ProudctSaveService {
 
 
     @Override
-    public void saveProduct(List<SkuEsModel> models) throws IOException {
+    public boolean saveProduct(List<SkuEsModel> models) throws IOException {
 
         //新建一个索引 用kibana
 
@@ -29,10 +35,31 @@ public class ProductSaveServiceImpl implements ProudctSaveService {
         BulkRequest bulkRequest = new BulkRequest();
 
 
+        for (SkuEsModel model : models) {
+
+            IndexRequest indexRequest = new IndexRequest(EsConstant.PRODUCT_INDEX);
+
+            indexRequest.id(model.getSkuId().toString());
+            String jsonString = JSON.toJSONString(model);
+            indexRequest.source(jsonString, XContentType.JSON);
 
 
 
-        restHighLevelClient.bulk(bulkRequest, GulimallElasticSearchConfig.COMMON_OPTIONS);
+            bulkRequest.add(indexRequest);
+
+        }
+
+
+        BulkResponse bulk = restHighLevelClient.bulk(bulkRequest, GulimallElasticSearchConfig.COMMON_OPTIONS);
+
+        //todo 判断是否有错误
+
+        boolean b = bulk.hasFailures();
+
+
+
+        return !b;
+
 
 
     }

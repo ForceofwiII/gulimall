@@ -1,5 +1,6 @@
 package com.atguigu.gulimall.product.service.impl;
 
+import com.atguigu.common.constant.ProductConstant;
 import com.atguigu.common.to.SkuHasStockVo;
 import com.atguigu.common.to.SkuReductionTo;
 import com.atguigu.common.to.SpuBoundTo;
@@ -11,6 +12,7 @@ import com.atguigu.gulimall.product.dao.SpuInfoDescDao;
 import com.atguigu.gulimall.product.entity.*;
 //import com.atguigu.gulimall.product.feign.CouponFeignService;
 import com.atguigu.gulimall.product.feign.CouponFeignService;
+import com.atguigu.gulimall.product.feign.EsFeignService;
 import com.atguigu.gulimall.product.feign.WareFeignService;
 import com.atguigu.gulimall.product.service.*;
 import com.atguigu.gulimall.product.vo.*;
@@ -18,7 +20,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -72,6 +76,9 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
     @Autowired
     WareFeignService wareFeignService;
+
+    @Autowired
+    EsFeignService esFeignService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -302,6 +309,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
             productAttrValueEntity.setAttrId(o.getAttrId());
             AttrEntity byId = attrService.getById(o.getAttrId());
             productAttrValueEntity.setAttrName(byId.getAttrName());
+            productAttrValueEntity.setSpuId(spuInfoEntity.getId());
             productAttrValueEntity.setAttrValue(o.getAttrValues());
             productAttrValueEntity.setQuickShow(o.getShowDesc());
 
@@ -417,7 +425,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     }
 
     @Override
-    public void up(Long id) {
+    public void up(Long id) throws IOException {
 
 
         List<SkuEsModel> list  =new ArrayList<>();
@@ -441,6 +449,12 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
             return o.getAttrId();
         }).collect(Collectors.toList());
+
+        System.out.println(ids);
+
+        if(ids==null || ids.size()==0){
+            throw new RuntimeException("系统异常");
+        }
 
           List<Long> searchIds=  attrService.getByAttrId(ids);
 
@@ -503,7 +517,12 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
 
 
+
+
+
             //todo 热度评分 用算法
+
+            skuEsModel.setHotScore(0L);
 
 
             BrandEntity byId = brandService.getById(skuEsModel.getBrandId());
@@ -525,6 +544,13 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         }).collect(Collectors.toList());
 
         //远程调用es微服务保存商品
+        R up = esFeignService.up(collect);
+        if(up.getCode()==0)
+        this.baseMapper.updateSpuStatus(id, ProductConstant.ProductStatusEnum.SPU_UP);
+
+
+
+      //业务幂等性
 
 
     }

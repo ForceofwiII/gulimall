@@ -1,5 +1,6 @@
 package com.atguigu.gulimall.product.controller;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -86,7 +87,7 @@ public class SpuInfoController {
     }
 
     @PostMapping("{spuID}/up")
-    public R spuUp(@PathVariable("spuID")Long id){
+    public R spuUp(@PathVariable("spuID")Long id) throws IOException {
 
 
 

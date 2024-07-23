@@ -17,10 +17,13 @@
         <result property="showDesc" column="show_desc"/>
     </resultMap>
     <select id="getByAttrId" resultType="java.lang.Long">
-
-       select  attr_id from pms_attr where attr_id in <foreach collection="ids" item="id" separator="," open="("
-        close=")" > #{id}</foreach>
-      and search_type =1
+        select attr_id
+        from pms_attr
+        where attr_id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+        and search_type = 1
     </select>
 
 
