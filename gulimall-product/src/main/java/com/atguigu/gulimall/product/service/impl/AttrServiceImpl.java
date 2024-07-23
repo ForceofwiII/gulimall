@@ -434,4 +434,12 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
 
     }
 
+    @Override
+    public List<Long> getByAttrId(List<Long> ids) {
+
+
+        return   attrDao.getByAttrId(ids);
+
+    }
+
 }

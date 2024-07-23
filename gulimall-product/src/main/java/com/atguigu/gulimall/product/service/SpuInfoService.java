@@ -31,5 +31,6 @@ public interface SpuInfoService extends IService<SpuInfoEntity> {
     void saveBaseSpuInfos(SpuInfoEntity spuInfoEntity);
 
 
+    void up(Long id);
 }
 
