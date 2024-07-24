@@ -3,6 +3,7 @@ package com.atguigu.gulimall.product.service.impl;
 import com.atguigu.common.utils.PageUtils;
 import com.atguigu.common.utils.Query;
 import com.atguigu.gulimall.product.service.CategoryBrandRelationService;
+import com.atguigu.gulimall.product.vo.Catelog2Vo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -147,6 +148,46 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
         return this.list(new QueryWrapper<CategoryEntity>().eq("parent_cid",0));
 
+    }
+
+    @Override
+    public Map<String, List<Catelog2Vo>> getCataLogJson() {
+
+        List<CategoryEntity> level1 = this.getLevel1();
+
+        Map<String, List<Catelog2Vo>> parentCid = level1.stream().collect(Collectors.toMap(k -> {
+            return k.getCatId().toString();
+        }, v -> {
+            //返回所有二级分类
+            List<CategoryEntity> level2 = this.list(new QueryWrapper<CategoryEntity>().eq("parent_cid", v.getCatId()));
+
+            List<Catelog2Vo> collect = null;
+            if (level2 != null || level2.size() > 0) {
+                collect = level2.stream().map(o -> {
+                    Catelog2Vo catelog2Vo = new Catelog2Vo(v.getCatId().toString(), null, o.getCatId().toString(), o.getName());
+
+                    //获取当前二级分类的三级分类
+                    List<CategoryEntity> level3 = this.baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", o.getCatId()));
+                    if(level3!=null || level3.size()>0){
+                        List<Catelog2Vo.Category3Vo> category3Vos = level3.stream().map(level3Cat -> {
+                            Catelog2Vo.Category3Vo category3Vo = new Catelog2Vo.Category3Vo(o.getCatId().toString(), level3Cat.getCatId().toString(), level3Cat.getName());
+                            return category3Vo;
+                        }).collect(Collectors.toList());
+                        catelog2Vo.setCatalog3List(category3Vos);
+                    }
+
+
+                    return catelog2Vo;
+                }).collect(Collectors.toList());
+
+
+            }
+            return collect;
+
+        }));
+
+
+        return parentCid;
     }
 
     //225,25,2
