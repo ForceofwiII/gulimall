@@ -15,12 +15,13 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
+@RequestMapping("search")
 public class EsSaveController {
 
     @Autowired
     ProudctSaveService proudctSaveService;
 
-    @RequestMapping("/search")
+
 
 
     @PostMapping("/product")

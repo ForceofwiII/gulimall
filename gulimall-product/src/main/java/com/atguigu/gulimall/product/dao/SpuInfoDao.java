@@ -18,5 +18,5 @@ import org.apache.ibatis.annotations.Update;
 public interface SpuInfoDao extends BaseMapper<SpuInfoEntity> {
 
     @Update("update  pms_spu_info  set publish_status=#{status}, update_time=now() where id =#{id} ")
-    void updateSpuStatus(@Param("id")Long id,@Param("status") ProductConstant.ProductStatusEnum productStatusEnum);
+    void updateSpuStatus(@Param("id")Long id,@Param("status") int status);
 }

@@ -1,5 +1,6 @@
 package com.atguigu.gulimall.product.service.impl;
 
+import com.alibaba.fastjson.TypeReference;
 import com.atguigu.common.constant.ProductConstant;
 import com.atguigu.common.to.SkuHasStockVo;
 import com.atguigu.common.to.SkuReductionTo;
@@ -425,6 +426,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void up(Long id) throws IOException {
 
 
@@ -476,6 +478,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         Map<Long, Boolean> hasStockMap = null;
         try{
             List<SkuHasStockVo> hasstock = wareFeignService.hasstock(skuIds);
+
 
          hasStockMap   = hasstock.stream().collect(Collectors.toMap(item -> item.getSkuId(), item -> item.getHasStock()));
 
@@ -546,7 +549,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         //远程调用es微服务保存商品
         R up = esFeignService.up(collect);
         if(up.getCode()==0)
-        this.baseMapper.updateSpuStatus(id, ProductConstant.ProductStatusEnum.SPU_UP);
+        this.baseMapper.updateSpuStatus(id, ProductConstant.ProductStatusEnum.SPU_UP.getCode());
 
 
 
