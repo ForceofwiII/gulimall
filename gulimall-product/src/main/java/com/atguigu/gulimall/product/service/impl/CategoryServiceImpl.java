@@ -1,16 +1,20 @@
 package com.atguigu.gulimall.product.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.atguigu.common.utils.PageUtils;
 import com.atguigu.common.utils.Query;
 import com.atguigu.gulimall.product.service.CategoryBrandRelationService;
 import com.atguigu.gulimall.product.vo.Catelog2Vo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -21,6 +25,7 @@ import com.atguigu.gulimall.product.dao.CategoryDao;
 import com.atguigu.gulimall.product.entity.CategoryEntity;
 import com.atguigu.gulimall.product.service.CategoryService;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 
 @Service("categoryService")
@@ -31,6 +36,10 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     @Autowired
     CategoryBrandRelationService categoryBrandRelationService;
+
+
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -150,16 +159,45 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     }
 
-    @Override
-    public Map<String, List<Catelog2Vo>> getCataLogJson() {
 
-        List<CategoryEntity> level1 = this.getLevel1();
+
+    @Override
+    public Map<String,List<Catelog2Vo>>  getCataLogJson(){
+
+        String catalogJson = stringRedisTemplate.opsForValue().get("catalogJson");
+        if(StringUtils.isEmpty(catalogJson)){
+            //缓存中没有数据
+            Map<String, List<Catelog2Vo>> categoryJsonFromDb = getCataLogJsonFromDb();
+
+
+            stringRedisTemplate.opsForValue().set("catalogJson", JSON.toJSONString(categoryJsonFromDb),1000, TimeUnit.SECONDS);
+            return categoryJsonFromDb;
+        }
+
+
+        return      JSON.parseObject(catalogJson, new TypeReference<Map<String, List<Catelog2Vo>>>() {});
+
+
+
+    }
+
+
+
+    public Map<String, List<Catelog2Vo>> getCataLogJsonFromDb() {
+
+
+
+
+
+        List<CategoryEntity> allLevel = this.list(null);
+
+        List<CategoryEntity> level1 = this.getParent(allLevel, 0L);
 
         Map<String, List<Catelog2Vo>> parentCid = level1.stream().collect(Collectors.toMap(k -> {
             return k.getCatId().toString();
         }, v -> {
             //返回所有二级分类
-            List<CategoryEntity> level2 = this.list(new QueryWrapper<CategoryEntity>().eq("parent_cid", v.getCatId()));
+            List<CategoryEntity> level2 = this.getParent(allLevel, v.getCatId());
 
             List<Catelog2Vo> collect = null;
             if (level2 != null || level2.size() > 0) {
@@ -167,7 +205,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
                     Catelog2Vo catelog2Vo = new Catelog2Vo(v.getCatId().toString(), null, o.getCatId().toString(), o.getName());
 
                     //获取当前二级分类的三级分类
-                    List<CategoryEntity> level3 = this.baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", o.getCatId()));
+                    List<CategoryEntity> level3 = this.getParent(allLevel, o.getCatId());
                     if(level3!=null || level3.size()>0){
                         List<Catelog2Vo.Category3Vo> category3Vos = level3.stream().map(level3Cat -> {
                             Catelog2Vo.Category3Vo category3Vo = new Catelog2Vo.Category3Vo(o.getCatId().toString(), level3Cat.getCatId().toString(), level3Cat.getName());
@@ -189,6 +227,24 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
         return parentCid;
     }
+
+
+
+    private List<CategoryEntity> getParent(List<CategoryEntity> allLevel, Long parentId){
+
+        List<CategoryEntity> collect = allLevel.stream().filter((o) -> {
+
+
+            return o.getParentCid() == parentId;
+        }).collect(Collectors.toList());
+
+
+        return  collect;
+
+
+    }
+
+
 
     //225,25,2
     private List<Long> findParentPath(Long catelogId,List<Long> paths){

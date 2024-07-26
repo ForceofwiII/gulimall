@@ -22,6 +22,9 @@ spring:
     time-zone: GMT+8
   thymeleaf:
     cache: false
+  redis:
+    host: 192.168.101.128
+    port: 6379
 
 
 mybatis-plus:
@@ -36,5 +39,4 @@ server:
 logging:
   level:
     com.atguigu.gulimall: debug
-
 
