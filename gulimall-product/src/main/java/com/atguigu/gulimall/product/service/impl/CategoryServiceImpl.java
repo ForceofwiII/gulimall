@@ -6,6 +6,8 @@ import com.atguigu.common.utils.PageUtils;
 import com.atguigu.common.utils.Query;
 import com.atguigu.gulimall.product.service.CategoryBrandRelationService;
 import com.atguigu.gulimall.product.vo.Catelog2Vo;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -40,6 +42,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     @Autowired
     StringRedisTemplate stringRedisTemplate;
+
+    @Autowired
+    RedissonClient redissonClient;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -186,46 +191,54 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     public Map<String, List<Catelog2Vo>> getCataLogJsonFromDb() {
 
 
+        RLock lock = redissonClient.getLock("catalogjsonlock");
+        lock.lock();
+
+        try{
+            List<CategoryEntity> allLevel = this.list(null);
+
+            List<CategoryEntity> level1 = this.getParent(allLevel, 0L);
+
+            Map<String, List<Catelog2Vo>> parentCid = level1.stream().collect(Collectors.toMap(k -> {
+                return k.getCatId().toString();
+            }, v -> {
+                //返回所有二级分类
+                List<CategoryEntity> level2 = this.getParent(allLevel, v.getCatId());
+
+                List<Catelog2Vo> collect = null;
+                if (level2 != null || level2.size() > 0) {
+                    collect = level2.stream().map(o -> {
+                        Catelog2Vo catelog2Vo = new Catelog2Vo(v.getCatId().toString(), null, o.getCatId().toString(), o.getName());
+
+                        //获取当前二级分类的三级分类
+                        List<CategoryEntity> level3 = this.getParent(allLevel, o.getCatId());
+                        if(level3!=null || level3.size()>0){
+                            List<Catelog2Vo.Category3Vo> category3Vos = level3.stream().map(level3Cat -> {
+                                Catelog2Vo.Category3Vo category3Vo = new Catelog2Vo.Category3Vo(o.getCatId().toString(), level3Cat.getCatId().toString(), level3Cat.getName());
+                                return category3Vo;
+                            }).collect(Collectors.toList());
+                            catelog2Vo.setCatalog3List(category3Vos);
+                        }
+
+
+                        return catelog2Vo;
+                    }).collect(Collectors.toList());
+
+
+                }
+                return collect;
+
+            }));
+
+
+            return parentCid;
+        }
+        finally {
+            lock.unlock();
+        }
 
 
 
-        List<CategoryEntity> allLevel = this.list(null);
-
-        List<CategoryEntity> level1 = this.getParent(allLevel, 0L);
-
-        Map<String, List<Catelog2Vo>> parentCid = level1.stream().collect(Collectors.toMap(k -> {
-            return k.getCatId().toString();
-        }, v -> {
-            //返回所有二级分类
-            List<CategoryEntity> level2 = this.getParent(allLevel, v.getCatId());
-
-            List<Catelog2Vo> collect = null;
-            if (level2 != null || level2.size() > 0) {
-                collect = level2.stream().map(o -> {
-                    Catelog2Vo catelog2Vo = new Catelog2Vo(v.getCatId().toString(), null, o.getCatId().toString(), o.getName());
-
-                    //获取当前二级分类的三级分类
-                    List<CategoryEntity> level3 = this.getParent(allLevel, o.getCatId());
-                    if(level3!=null || level3.size()>0){
-                        List<Catelog2Vo.Category3Vo> category3Vos = level3.stream().map(level3Cat -> {
-                            Catelog2Vo.Category3Vo category3Vo = new Catelog2Vo.Category3Vo(o.getCatId().toString(), level3Cat.getCatId().toString(), level3Cat.getName());
-                            return category3Vo;
-                        }).collect(Collectors.toList());
-                        catelog2Vo.setCatalog3List(category3Vos);
-                    }
-
-
-                    return catelog2Vo;
-                }).collect(Collectors.toList());
-
-
-            }
-            return collect;
-
-        }));
-
-
-        return parentCid;
     }
 
 
