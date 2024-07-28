@@ -29,6 +29,8 @@ public class IndexController {
 
       model.addAttribute("categories",categoryEntityList);
 
+
+
         //返回首頁
         return "index";
     }
@@ -37,9 +39,10 @@ public class IndexController {
 
     @GetMapping("/index/catalog.json")
     @ResponseBody
-
     public Map<String,List<Catelog2Vo>> getCataLogJson(){
         //1、查出所有的1级分类
+
+
         return categoryService.getCataLogJson();
 
 

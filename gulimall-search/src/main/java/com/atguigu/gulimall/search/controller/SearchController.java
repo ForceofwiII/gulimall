@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class SearchController {
 
 
-    @GetMapping("/list.html")
+    @GetMapping({"/list.html", "/"})
     public  String listpage(){
-        return "index";
+        return "list";
     }
 }
