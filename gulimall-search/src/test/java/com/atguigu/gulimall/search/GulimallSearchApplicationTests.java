@@ -58,6 +58,16 @@ public class GulimallSearchApplicationTests {
 
 
     @Test
+    public  void test(){
+
+        System.out.println("500_".split("_").length);
+    }
+
+
+
+
+
+    @Test
     public  void test1() throws IOException {
         //测试新增或修改数据
 

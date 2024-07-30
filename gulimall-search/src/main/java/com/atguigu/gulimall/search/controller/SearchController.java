@@ -9,6 +9,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.io.IOException;
+
 @Controller
 public class SearchController {
 
@@ -23,7 +25,7 @@ public class SearchController {
 
 
     @GetMapping("/list.html") //按照条件检索
-    public  String listpage(  SearchParam searchParam , Model model){
+    public  String listpage(  SearchParam searchParam , Model model) throws IOException {
 
         SearchResult result = mallSearchService.search(searchParam);
 
