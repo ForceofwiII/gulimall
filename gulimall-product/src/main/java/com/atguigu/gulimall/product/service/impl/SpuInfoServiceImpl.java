@@ -274,6 +274,8 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     public void saveSpuInfos(SpuSaveVo vo) {
         //保存spu基本信息  spuinfo
 
+        System.out.println(vo.getBaseAttrs().toString());
+
         SpuInfoEntity spuInfoEntity = new SpuInfoEntity();
         BeanUtils.copyProperties(vo,spuInfoEntity);
         spuInfoEntity.setCreateTime(new Date());
@@ -452,7 +454,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
             return o.getAttrId();
         }).collect(Collectors.toList());
 
-        System.out.println(ids);
+
 
         if(ids==null || ids.size()==0){
             throw new RuntimeException("系统异常");
