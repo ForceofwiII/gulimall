@@ -1,6 +1,7 @@
 package com.atguigu.gulimall.product;
 
 import com.aliyun.oss.*;
+import com.atguigu.gulimall.product.dao.SkuSaleAttrValueDao;
 import com.atguigu.gulimall.product.entity.BrandEntity;
 import com.atguigu.gulimall.product.entity.CategoryEntity;
 import com.atguigu.gulimall.product.service.BrandService;
@@ -52,12 +53,16 @@ public class GulimallProductApplicationTests {
     @Autowired
     RedissonClient redissonClient;
 
+    @Autowired
+    SkuSaleAttrValueDao skuSaleAttrValueDao;
+
+
     @Test
     public void testFindPath(){
 //        Long[] catelogPath = categoryService.findCatelogPath(225L);
 //        log.info("完整路径：{}",Arrays.asList(catelogPath));
 
-        System.out.println(redissonClient);
+        System.out.println(skuSaleAttrValueDao.getBySpuId(27L));
     }
 
 

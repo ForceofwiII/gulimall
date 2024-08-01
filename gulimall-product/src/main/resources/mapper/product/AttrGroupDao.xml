@@ -13,5 +13,28 @@
         <result property="catelogId" column="catelog_id"/>
     </resultMap>
 
+    <resultMap id="getSpuId" type="com.atguigu.gulimall.product.vo.SpuItemAttrGroupVo">
+     <result property="groupName" column="attr_group_name"></result>
+     <collection property="attrs" ofType="com.atguigu.gulimall.product.vo.SpuBaseAttrVo">
+
+         <result property="attrName" column="attr_name"></result>
+         <result property="attrValue" column="attr_value"></result>
+        </collection>
+
+    </resultMap>
+
+    <select id="getBySpuId" resultMap="getSpuId">
+
+        #根据spuid和spu的分类id查出这个spu对应的所有属性分组以及每个属性分组下的所有属性
+        select  ag.attr_group_name  , ag.attr_group_id ,
+                aar.attr_id , av.attr_name  , av.attr_value
+        from pms_attr_group ag
+                 left join pms_attr_attrgroup_relation aar on ag.attr_group_id = aar.attr_group_id
+                 left join pms_product_attr_value av on aar.attr_id = av.attr_id
+        where ag.catelog_id = #{catalogId} and av.spu_id =#{spuId}
+
+
+    </select>
+
 
 </mapper>
