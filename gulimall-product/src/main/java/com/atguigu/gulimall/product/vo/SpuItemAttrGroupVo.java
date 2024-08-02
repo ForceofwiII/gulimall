@@ -18,7 +18,7 @@ public class SpuItemAttrGroupVo {
 
     private String groupName;
 
- //   private List<Attr> attrs;
+ // private List<Attr> attrs;
 
     private  List<SpuBaseAttrVo> attrs;
 

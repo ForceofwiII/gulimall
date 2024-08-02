@@ -625,13 +625,9 @@
                         <dl>
                             <dt>选择[[${attr.attrName}]]</dt>
                             <dd th:each="val : ${#strings.listSplit(attr.attrValues, ',')}">
-<!--                                <a th:attr=" class=${#lists.contains(#strings.listSplit(val.skuIds,','),item.info.skuId.toString())-->
-<!--                                   ? 'sku_attr_value checked': 'sku_attr_value'}, skus=${val.skuIds} "-->
-<!--                                >-->
-<!--                                    [[${val.attrValue}]]-->
-<!--                                    &lt;!&ndash;											<img src="/static/item/img/59ddfcb1Nc3edb8f1.jpg" /> &ndash;&gt;-->
-<!--                                </a>-->
-                                [[${val}}]]
+
+
+                                [[${val}]]
                             </dd>
                         </dl>
                     </div>
@@ -858,7 +854,7 @@
                     <a href="/static/item/##" style="color: white;">商品介绍</a>
                 </li>
                 <li class="baozhuang">
-                    <a href="/static/item/##">规格与包装</a>
+                    <a >规格与包装</a>
                 </li>
                 <li class="baozhang">
                     <a href="/static/item/##">售后保障</a>
@@ -968,14 +964,13 @@
                         </div>
                     </li>
                     <li class="baozhuang actives" id="li2">
-                    <li class="baozhuang actives" id="li2">
                         <div class="guiGebox">
                             <div class="guiGe" th:each="group : ${item.groupAttrs}">
                                 <h3 th:text="${group.groupName}">主体</h3>
                                 <dl>
                                     <div th:each="attr : ${group.attrs}">
                                         <dt th:text="${attr.attrName}">品牌</dt>
-                                        <dd th:text="${attr.attrValue}">华为(HUAWEI)</dd>
+<!--                                        <dd th:text="${attr.attrValue}">华为(HUAWEI)</dd>-->
                                     </div>
                                 </dl>
                             </div>
