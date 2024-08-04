@@ -1,11 +1,10 @@
-package com.atguigu.gulimall.auth;
+package com.atguigu.gulimall.auth.controller;
 
 
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
-@Controller
-public class controller {
+@org.springframework.stereotype.Controller
+public class Controller {
 
     @GetMapping({"login.html","/"})
     public String login(){

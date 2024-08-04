@@ -34,14 +34,14 @@ public class EsSaveController {
    catch (Exception e){
 
 
-       return R.error(BizCodeEnume.PROUDCT_UP_EXCEPTION.getCode(), BizCodeEnume.PROUDCT_UP_EXCEPTION.getMsg());
+       return R.error(BizCodeEnume.PRODUCT_UP_EXCEPTION.getCode(), BizCodeEnume.PRODUCT_UP_EXCEPTION.getMsg());
 
    }
 
        if(b)
         return  R.ok();
        else {
-           return R.error(BizCodeEnume.PROUDCT_UP_EXCEPTION.getCode(), BizCodeEnume.PROUDCT_UP_EXCEPTION.getMsg());
+           return R.error(BizCodeEnume.PRODUCT_UP_EXCEPTION.getCode(), BizCodeEnume.PRODUCT_UP_EXCEPTION.getMsg());
 
        }
 

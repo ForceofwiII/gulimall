@@ -8,17 +8,17 @@ spring:
         namespace: dev
 
         server-addr: 192.168.101.128:8848
-      config:
-        namespace: dev
-        group: gulimall-project
-        file-extension: yaml
-        server-addr: 192.168.101.128:8848
-        ext-config:
-          - data-id: oss.yaml
-            group: gulimall-project
+#      config:
+#        namespace: dev
+#        group: gulimall-project
+#        file-extension: yaml
+#        server-addr: 192.168.101.128:8848
+#        ext-config:
+#          - data-id: oss.yaml
+#            group: gulimall-project
+#
+#            refresh: true
 
-            refresh: true
 
-
-  profiles:
-    active: dev #环境名
+#  profiles:
+#    active: dev #环境名
