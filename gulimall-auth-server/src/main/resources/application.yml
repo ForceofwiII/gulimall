@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: gulimall-product
+  datasource:
+    username: root
+    password: root
+    url: jdbc:mysql://192.168.101.128:3306/gulimall_pms?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.101.128:8848
+        namespace: dev
+server:
+  port: 20000
+
+
+
+

@@ -66,6 +66,12 @@ spring:
             - Host=item.gulimall.com
 
 
+        - id: gulimall_host_route4
+          uri: lb://gulimall-auth-server
+          predicates:
+            - Host=auth.gulimall.com
+
+
 
   ## 前端项目，/api
 ## http://localhost:88/api/captcha.jpg   http://localhost:8080/renren-fast/captcha.jpg

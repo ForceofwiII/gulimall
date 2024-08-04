@@ -624,10 +624,16 @@
                     <div class="box-attr clear" th:each="attr : ${item.saleAttr}">
                         <dl>
                             <dt>选择[[${attr.attrName}]]</dt>
-                            <dd th:each="val : ${#strings.listSplit(attr.attrValues, ',')}">
+<!--                            <dd th:each="val : ${#strings.listSplit(attr.attrValues, ',')}">-->
 
-
-                                [[${val}]]
+                            <dd th:each="val : ${attr.attrValues}">
+<!--                                [[${val}]]-->
+                                <a th:attr=" class=${#lists.contains(#strings.listSplit(val.skuIds,','),item.info.skuId.toString())
+                                   ? 'sku_attr_value checked': 'sku_attr_value'}, skus=${val.skuIds} "
+                                >
+                                    [[${val.attrValue}]]
+                                    <!--											<img src="/static/item/img/59ddfcb1Nc3edb8f1.jpg" /> -->
+                                </a>
                             </dd>
                         </dl>
                     </div>
@@ -1365,12 +1371,14 @@
             skus.push($(this).attr("skus").split(","));
         });
 
-        let filterEle = skus[0];
+        var filterEle = skus[0];
         for (let i = 1; i < skus.length; i++) {
-            filterEle = $(filterEle).filter(skus[i])[0];
+            filterEle = $(filterEle).filter(skus[i]);
         }
+        console.log(filterEle[0])
 
-        location.href = "http://item.gulimall.com/" + filterEle + ".html";
+        location.href = "http://item.gulimall.com/" + filterEle[0] + ".html";
+
 
         return false;
     });

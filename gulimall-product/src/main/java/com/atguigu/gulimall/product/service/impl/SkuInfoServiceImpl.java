@@ -5,6 +5,7 @@ import com.atguigu.common.utils.Query;
 import com.atguigu.gulimall.product.entity.SkuImagesEntity;
 import com.atguigu.gulimall.product.entity.SpuInfoDescEntity;
 import com.atguigu.gulimall.product.service.*;
+import com.atguigu.gulimall.product.vo.SeckillSkuVo;
 import com.atguigu.gulimall.product.vo.SkuItemSaleAttrVo;
 import com.atguigu.gulimall.product.vo.SkuItemVo;
 import com.atguigu.gulimall.product.vo.SpuItemAttrGroupVo;
@@ -14,6 +15,10 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -40,6 +45,10 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
 
     @Autowired
     SkuSaleAttrValueService skuSaleAttrValueService;
+
+
+    @Autowired
+    ThreadPoolExecutor executor;
 
 
     @Override
@@ -186,47 +195,55 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
     }
 
     @Override
-    public SkuItemVo getSku(Long skuId) {
+    public SkuItemVo getSku(Long skuId) throws ExecutionException, InterruptedException {
 
         SkuItemVo skuItemVo = new SkuItemVo();
 
 
-       //sku基本信息
-        SkuInfoEntity skuInfoEntity = skuInfoDao.selectById(skuId);
-        skuItemVo.setInfo(skuInfoEntity);
+        CompletableFuture<SkuInfoEntity> future = CompletableFuture.supplyAsync(() -> {
+            //sku基本信息
+            SkuInfoEntity skuInfoEntity = skuInfoDao.selectById(skuId);
+            skuItemVo.setInfo(skuInfoEntity);
 
-        Long spuId = skuInfoEntity.getSpuId();
+            return skuInfoEntity;
+        }, executor);
+        //这些都是要基本属性查完后再查的
 
-        Long catalogId = skuInfoEntity.getCatalogId();
+        CompletableFuture<Void> sale = future.thenAcceptAsync((skuInfoEntity) -> {
+            //spu中所有sku销售属性组合
 
-        //sku图片信息
-        List<SkuImagesEntity> skuImagesEntities = skuImagesService.list(new QueryWrapper<SkuImagesEntity>().eq("id", skuId));
-        skuItemVo.setImages(skuImagesEntities);
-        //spu中所有sku销售属性组合
+            List<SkuItemSaleAttrVo> skuItemSaleAttrVos = skuSaleAttrValueService.getBySpuId(skuInfoEntity.getSpuId());
 
-        List<SkuItemSaleAttrVo> skuItemSaleAttrVos  = skuSaleAttrValueService.getBySpuId(spuId);
+            skuItemVo.setSaleAttr(skuItemSaleAttrVos);
 
-        skuItemVo.setSaleAttr(skuItemSaleAttrVos);
+        }, executor);
+
+        CompletableFuture<Void> desc = future.thenAcceptAsync((skuInfoEntity) -> {
+            //spu的介绍
+
+            SpuInfoDescEntity spuInfoDescEntity = spuInfoDescService.getBySpuId(skuInfoEntity.getSpuId());
+            skuItemVo.setDesc(spuInfoDescEntity);
+        }, executor);
+
+        CompletableFuture<Void> base = future.thenAcceptAsync((skuInfoEntity) -> {
+            //spu的基本属性和属性分组
+
+            List<SpuItemAttrGroupVo> spuItemAttrGroupVos = attrGroupService.getBySpuId(skuInfoEntity.getSpuId(), skuInfoEntity.getCatalogId());
+
+            skuItemVo.setGroupAttrs(spuItemAttrGroupVos);
+
+        }, executor);
+
+        //这个不需要基本属性
 
 
+        CompletableFuture<Void> image = CompletableFuture.runAsync(() -> {//sku图片信息
+            List<SkuImagesEntity> skuImagesEntities = skuImagesService.list(new QueryWrapper<SkuImagesEntity>().eq("id", skuId));
+            skuItemVo.setImages(skuImagesEntities);
 
-        //spu的介绍
+        }, executor);
 
-
-
-
-
-        SpuInfoDescEntity spuInfoDescEntity = spuInfoDescService.getBySpuId(spuId);
-        skuItemVo.setDesc(spuInfoDescEntity);
-
-
-        //spu的基本属性和属性分组
-
-        List<SpuItemAttrGroupVo> spuItemAttrGroupVos= attrGroupService.getBySpuId(spuId,catalogId);
-
-        skuItemVo.setGroupAttrs(spuItemAttrGroupVos);
-
-        System.out.println("success");
+        CompletableFuture.allOf(sale, desc, base, image).get();
 
 
         return skuItemVo;
