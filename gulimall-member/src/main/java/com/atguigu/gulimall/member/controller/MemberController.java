@@ -8,6 +8,7 @@ import com.atguigu.gulimall.member.exception.PhoneException;
 import com.atguigu.gulimall.member.exception.UsernameException;
 import com.atguigu.gulimall.member.feign.CouponFeignService;
 import com.atguigu.gulimall.member.vo.MemberRegisterVo;
+import com.atguigu.gulimall.member.vo.UserLoginVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -112,6 +113,20 @@ public class MemberController {
         catch (UsernameException u){
             return R.error(BizCodeEnume.USER_EXIST_EXCEPTION.getCode(),BizCodeEnume.USER_EXIST_EXCEPTION.getMsg());
         }
+    }
+
+    @PostMapping("/login")
+    public R login(@RequestBody UserLoginVo userloginVo){
+
+
+         MemberEntity member=  memberService.login(userloginVo);
+            if(member==null){
+                return R.error(BizCodeEnume.LOGINACCT_PASSWORD_EXCEPTION.getCode(),BizCodeEnume.LOGINACCT_PASSWORD_EXCEPTION.getMsg());
+
+            }
+
+        return  R.ok();
+
     }
 
 }

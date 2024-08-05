@@ -4,11 +4,14 @@ import com.atguigu.gulimall.member.dao.MemberLevelDao;
 import com.atguigu.gulimall.member.exception.PhoneException;
 import com.atguigu.gulimall.member.exception.UsernameException;
 import com.atguigu.gulimall.member.vo.MemberRegisterVo;
+import com.atguigu.gulimall.member.vo.UserLoginVo;
 import org.apache.catalina.User;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 import java.util.Map;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -66,6 +69,30 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
         memberEntity.setMobile(memberRegisterVo.getPhone());
         this.save(memberEntity);
 
+    }
+
+    @Override
+    public MemberEntity login(UserLoginVo userloginVo) {
+
+        String password = userloginVo.getPassword();
+
+
+        MemberEntity memberEntity =   memberDao.selectByAccount(userloginVo);
+        if(memberEntity==null){
+            return null;
+        }
+
+        String password1 = memberEntity.getPassword();
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+
+
+        boolean matches = bCryptPasswordEncoder.matches(password, password1);
+        if(!matches){
+            return null;
+        }
+
+
+        return  memberEntity;
     }
 
 

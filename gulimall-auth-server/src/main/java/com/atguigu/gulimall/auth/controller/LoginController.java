@@ -10,6 +10,7 @@ import com.atguigu.common.utils.R;
 import com.atguigu.gulimall.auth.feign.MemberFeignService;
 import com.atguigu.gulimall.auth.feign.ThirdPart;
 import com.atguigu.gulimall.auth.vo.MemberRegisterVo;
+import com.atguigu.gulimall.auth.vo.UserLoginVo;
 import com.atguigu.gulimall.auth.vo.UserRegisterVo;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -130,7 +131,7 @@ public class LoginController {
 
         if(r.getCode()!=0){
             Map<String,String> errors =  new HashMap<>();
-            errors.put("msg",r.get("msg").toString());
+            errors.put("msg",r.getData("msg",new TypeReference<String>(){}));
 
 
             redirectAttributes.addFlashAttribute("errors",errors);
@@ -142,6 +143,25 @@ public class LoginController {
 
 
         return "redirect:http://auth.gulimall.com/login.html";
+    }
+
+    @PostMapping("/login")
+    public String login(UserLoginVo loginVo,RedirectAttributes redirectAttributes){
+
+
+        R login = memberFeignService.login(loginVo);
+        if(login.getCode()!=0){
+            Map<String,String> errors =  new HashMap<>();
+            errors.put("msg",login.getData("msg",new TypeReference<String>(){}));
+
+
+            redirectAttributes.addFlashAttribute("errors",errors);
+            return "redirect:http://auth.gulimall.com/login.html";
+        }
+
+
+        return "redirect:http://gulimall.com";
+
     }
 
 }
