@@ -7,6 +7,7 @@ import com.atguigu.common.exception.BizCodeEnume;
 import com.atguigu.gulimall.member.exception.PhoneException;
 import com.atguigu.gulimall.member.exception.UsernameException;
 import com.atguigu.gulimall.member.feign.CouponFeignService;
+import com.atguigu.gulimall.member.vo.GithubUser;
 import com.atguigu.gulimall.member.vo.MemberRegisterVo;
 import com.atguigu.gulimall.member.vo.UserLoginVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -126,6 +127,18 @@ public class MemberController {
             }
 
         return  R.ok();
+
+    }
+
+    @PostMapping("/github/login")
+    public R githubLogin(@RequestBody GithubUser githubUser){
+        MemberEntity member=  memberService.githubLogin(githubUser);
+        if(member==null){
+            return R.error(BizCodeEnume.LOGINACCT_PASSWORD_EXCEPTION.getCode(),BizCodeEnume.LOGINACCT_PASSWORD_EXCEPTION.getMsg());
+
+        }
+
+        return  R.ok().setData(member);
 
     }
 

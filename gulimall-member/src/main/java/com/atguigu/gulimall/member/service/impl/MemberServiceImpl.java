@@ -3,6 +3,7 @@ package com.atguigu.gulimall.member.service.impl;
 import com.atguigu.gulimall.member.dao.MemberLevelDao;
 import com.atguigu.gulimall.member.exception.PhoneException;
 import com.atguigu.gulimall.member.exception.UsernameException;
+import com.atguigu.gulimall.member.vo.GithubUser;
 import com.atguigu.gulimall.member.vo.MemberRegisterVo;
 import com.atguigu.gulimall.member.vo.UserLoginVo;
 import org.apache.catalina.User;
@@ -93,6 +94,24 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
 
 
         return  memberEntity;
+    }
+
+    @Override
+    public MemberEntity githubLogin(GithubUser githubUser) {
+        String socialId = githubUser.getId().toString();
+        MemberEntity memberEntity = memberDao.selectOne(new QueryWrapper<MemberEntity>().eq("social_id", socialId));
+        if(memberEntity==null){
+            memberEntity = new MemberEntity();
+            memberEntity.setSocialId(socialId);
+            memberEntity.setNickname(githubUser.getName());
+
+            memberEntity.setEmail(githubUser.getEmail());
+            memberEntity.setCity(githubUser.getLocation());
+            memberEntity.setLevelId(memberLevelDao.getDefaultLevelId());
+            this.save(memberEntity);
+        }
+
+        return memberEntity;
     }
 
 

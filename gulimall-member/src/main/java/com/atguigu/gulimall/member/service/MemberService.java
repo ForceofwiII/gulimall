@@ -1,5 +1,6 @@
 package com.atguigu.gulimall.member.service;
 
+import com.atguigu.gulimall.member.vo.GithubUser;
 import com.atguigu.gulimall.member.vo.MemberRegisterVo;
 import com.atguigu.gulimall.member.vo.UserLoginVo;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -22,5 +23,7 @@ public interface MemberService extends IService<MemberEntity> {
     void register(MemberRegisterVo memberRegisterVo);
 
     MemberEntity login(UserLoginVo userloginVo);
+
+    MemberEntity githubLogin(GithubUser githubUser);
 }
 

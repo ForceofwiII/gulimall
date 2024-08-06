@@ -1,6 +1,7 @@
 package com.atguigu.gulimall.auth.feign;
 
 import com.atguigu.common.utils.R;
+import com.atguigu.gulimall.auth.vo.GithubUser;
 import com.atguigu.gulimall.auth.vo.MemberRegisterVo;
 import com.atguigu.gulimall.auth.vo.UserLoginVo;
 import com.atguigu.gulimall.auth.vo.UserRegisterVo;
@@ -18,5 +19,8 @@ public interface MemberFeignService {
 
     @PostMapping("/member/member/login")
     public R login(@RequestBody UserLoginVo userloginVo);
+
+    @PostMapping("/member/member/github/login")
+    public R githubLogin(@RequestBody GithubUser githubUser);
 
 }
