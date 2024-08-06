@@ -1,7 +1,5 @@
-package com.atguigu.gulimall.auth.vo;
+package com.atguigu.common.vo;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.ToString;
 

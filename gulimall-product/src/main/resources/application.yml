@@ -31,6 +31,9 @@ spring:
       cache-null-values: true
       use-key-prefix: true
       time-to-live: 3600000
+  session:
+    store-type: redis
+
 
 
 mybatis-plus:

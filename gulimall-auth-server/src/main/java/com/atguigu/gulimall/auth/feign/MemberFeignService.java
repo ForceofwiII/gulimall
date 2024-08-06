@@ -1,10 +1,7 @@
 package com.atguigu.gulimall.auth.feign;
 
 import com.atguigu.common.utils.R;
-import com.atguigu.gulimall.auth.vo.GithubUser;
-import com.atguigu.gulimall.auth.vo.MemberRegisterVo;
-import com.atguigu.gulimall.auth.vo.UserLoginVo;
-import com.atguigu.gulimall.auth.vo.UserRegisterVo;
+import com.atguigu.gulimall.auth.vo.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,5 +19,8 @@ public interface MemberFeignService {
 
     @PostMapping("/member/member/github/login")
     public R githubLogin(@RequestBody GithubUser githubUser);
+
+    @PostMapping("/member/member/google/login")
+    public R googleLogin(@RequestBody GoogleUser googleUser);
 
 }
