@@ -127,7 +127,7 @@ public class MemberController {
 
             }
 
-        return  R.ok();
+        return  R.ok().setData(member);
 
     }
 

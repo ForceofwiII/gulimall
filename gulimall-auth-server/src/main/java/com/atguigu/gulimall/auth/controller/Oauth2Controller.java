@@ -102,7 +102,7 @@ public class Oauth2Controller {
     }
 
     @GetMapping("/oauth2/google/success")
-    public String google(@RequestParam("code") String code) {
+    public String google(@RequestParam("code") String code , HttpSession session) {
         //根据授权码获得令牌
 
         //糊涂工具包发送post请求
@@ -142,6 +142,8 @@ public class Oauth2Controller {
         MemberEntityVo data = r.getData(new TypeReference<MemberEntityVo>() {
         });
         log.info("登录成功：用户信息：{}",data);
+
+        session.setAttribute("loginUser",data);
 
 
 

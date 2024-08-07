@@ -69,6 +69,7 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
 
         memberEntity.setUsername(memberRegisterVo.getUserName());
         memberEntity.setMobile(memberRegisterVo.getPhone());
+        memberEntity.setNickname(memberRegisterVo.getUserName());
         this.save(memberEntity);
 
     }

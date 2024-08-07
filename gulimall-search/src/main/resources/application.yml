@@ -1,4 +1,9 @@
 spring:
+  redis:
+    host: 192.168.101.128
+    port: 6379
+  session:
+    store-type: redis
   datasource:
     username: root
     password: root
