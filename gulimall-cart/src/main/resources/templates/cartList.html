@@ -85,10 +85,10 @@
         </div>
 
         <div class="One_ShopCon">
-            <h1 th:if="${cart.items == null}">
+            <h1 th:if="${ cart==null }">
                 购物车还没有商品，<a href="http://gulimall.com/">去购物</a>
             </h1>
-            <ul th:if="${cart.items != null}">
+            <ul th:if="${cart!=null && cart.items != null}">
                 <li th:each="item:${cart.items}">
                     <div>
                     </div>
@@ -146,8 +146,8 @@
             </div>
             <div>
                 <ol>
-                    <li>总价:<span style="color:#e64346;font-weight:bold;font-size:16px;" class="fnt">￥[[${#numbers.formatDecimal(cart.totalAmount, 3, 2)}]]</span>
-                    <li>优惠：￥[[${#numbers.formatDecimal(cart.reduce,1,2)}]]</li>
+                    <li th:if="${cart!=null && cart.items != null}" >总价:<span style="color:#e64346;font-weight:bold;font-size:16px;" class="fnt">￥[[${#numbers.formatDecimal(cart.totalAmount, 3, 2)}]]</span>
+                    <li th:if="${cart!=null && cart.items != null}">优惠：￥[[${#numbers.formatDecimal(cart.reduce,1,2)}]]</li>
                 </ol>
             </div>
             <div>

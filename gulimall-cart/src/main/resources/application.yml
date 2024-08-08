@@ -38,12 +38,12 @@ spring:
   thymeleaf:
     cache: false
 
-##配置线程池
-#gulimall:
-#  thread:
-#    coreSize: 20
-#    maxSize: 200
-#    keepAliveTime: 10
+#配置线程池
+gulimall:
+  thread:
+    coreSize: 20
+    maxSize: 200
+    keepAliveTime: 10
 
 ##暴露所有端点
 #management:
