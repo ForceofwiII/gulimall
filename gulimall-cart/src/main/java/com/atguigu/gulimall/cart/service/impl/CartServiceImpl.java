@@ -7,6 +7,7 @@ import com.atguigu.gulimall.cart.feign.ProductFeign;
 import com.atguigu.gulimall.cart.interceptor.CartInterceptor;
 import com.atguigu.gulimall.cart.service.CartService;
 import com.atguigu.gulimall.cart.vo.CartItemVo;
+import com.atguigu.gulimall.cart.vo.CartVo;
 import com.atguigu.gulimall.cart.vo.SkuInfoVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -98,4 +100,74 @@ public class CartServiceImpl implements CartService {
 
     return cartItemVo;
   }
+
+  @Override
+  public CartVo getCart() {
+
+    Long userId = CartInterceptor.toThreadLocal.get().getUserId();
+    String cartKey = CART_PREFIX + userId;
+    CartVo cartVo = new CartVo();
+    BoundHashOperations<String, Object, Object> operations = redisTemplate.boundHashOps(cartKey);
+    List<Object> values = operations.values();
+
+    List<CartItemVo> collect = values.stream().map((o) -> {
+      return JSON.parseObject((String) o, CartItemVo.class);
+
+    }).collect(Collectors.toList());
+
+    cartVo.setItems(collect);
+
+    cartVo.setCountNum(cartVo.getCountNum());
+    cartVo.setCountType(cartVo.getCountType());
+    cartVo.setTotalAmount(cartVo.getTotalAmount());
+    return cartVo;
+
+
+  }
+
+
+  @Override
+  public void deleteCart(){
+    Long userId = CartInterceptor.toThreadLocal.get().getUserId();
+    String cartKey = CART_PREFIX + userId;
+    redisTemplate.delete(cartKey);
+  }
+
+  @Override
+  public void checkItem(Long skuId, Integer checked) {
+    Long userId = CartInterceptor.toThreadLocal.get().getUserId();
+    String cartKey = CART_PREFIX + userId;
+    String o = (String) redisTemplate.opsForHash().get(cartKey, skuId.toString());
+
+    CartItemVo cartItemVo = JSON.parseObject(o, CartItemVo.class);
+    cartItemVo.setCheck(checked==1);
+    redisTemplate.opsForHash().put(cartKey,skuId.toString(),JSON.toJSONString(cartItemVo));
+
+
+  }
+
+  @Override
+  public void countItem(Long skuId, Integer num) {
+
+    Long userId = CartInterceptor.toThreadLocal.get().getUserId();
+    String cartKey = CART_PREFIX + userId;
+    String o = (String) redisTemplate.opsForHash().get(cartKey, skuId.toString());
+    CartItemVo cartItemVo = JSON.parseObject(o, CartItemVo.class);
+    cartItemVo.setCount(num);
+
+    redisTemplate.opsForHash().put(cartKey,skuId.toString(),JSON.toJSONString(cartItemVo));
+
+
+
+  }
+
+  @Override
+  public void deleteItem(Long skuId) {
+    Long userId = CartInterceptor.toThreadLocal.get().getUserId();
+    String cartKey = CART_PREFIX + userId;
+    redisTemplate.opsForHash().delete(cartKey,skuId.toString());
+
+  }
+
+
 }

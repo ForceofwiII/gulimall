@@ -69,6 +69,19 @@ public class CartVo {
         return count;
     }
 
+    public void setCountNum(Integer countNum) {
+        this.countNum = countNum;
+    }
+
+    public void setCountType(Integer countType) {
+        this.countType = countType;
+    }
+
+    public void setTotalAmount(BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+
 
     public BigDecimal getTotalAmount() {
         BigDecimal amount = new BigDecimal("0");

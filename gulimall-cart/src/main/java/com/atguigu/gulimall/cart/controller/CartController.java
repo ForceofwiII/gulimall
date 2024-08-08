@@ -6,6 +6,7 @@ import com.atguigu.gulimall.cart.interceptor.CartInterceptor;
 import com.atguigu.gulimall.cart.service.CartService;
 import com.atguigu.gulimall.cart.to.UserInfoTo;
 import com.atguigu.gulimall.cart.vo.CartItemVo;
+import com.atguigu.gulimall.cart.vo.CartVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
@@ -27,13 +28,15 @@ public class CartController {
 
 
     @GetMapping("/cart.html") //查询购物车
-    public String cartListPage(){
+    public String cartListPage(  Model model){
 
         UserInfoTo userInfoTo = CartInterceptor.toThreadLocal.get();
         if(userInfoTo.getUserId()==null){
             return "redirect:http://auth.gulimall.com/login.html";
         }
 
+        CartVo cartVo = cartService.getCart();
+        model.addAttribute("cart",cartVo);
         return "cartList";
     }
 
@@ -51,6 +54,33 @@ public class CartController {
 
         return "success";
     }
+
+    @GetMapping("/checkItem") //选中购物项
+    public String checkItem(@RequestParam("skuId") Long skuId, @RequestParam("checked") Integer checked){
+        cartService.checkItem(skuId,checked);
+        return "redirect:http://cart.gulimall.com/cart.html";
+    }
+
+
+
+    @GetMapping("/countItem")
+    public String countItem(@RequestParam("skuId") Long skuId, @RequestParam("num") Integer num   ){ //修改购物项数量
+
+
+        cartService.countItem(skuId,num);
+
+        return "redirect:http://cart.gulimall.com/cart.html";
+    }
+
+
+    @GetMapping("/deleteItem") //删除购物项
+    public String deleteItem(@RequestParam("skuId") Long skuId){
+        cartService.deleteItem(skuId);
+        return "redirect:http://cart.gulimall.com/cart.html";
+    }
+
+
+
 
 
 }
