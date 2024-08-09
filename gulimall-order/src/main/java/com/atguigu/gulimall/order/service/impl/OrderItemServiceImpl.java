@@ -1,5 +1,6 @@
 package com.atguigu.gulimall.order.service.impl;
 
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 import java.util.Map;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -24,6 +25,16 @@ public class OrderItemServiceImpl extends ServiceImpl<OrderItemDao, OrderItemEnt
         );
 
         return new PageUtils(page);
+    }
+
+
+
+    @RabbitListener(queues = "hello.queue")
+    public  void Listen(Object msg){
+
+        System.out.println("收到消息："+msg);
+
+
     }
 
 }
