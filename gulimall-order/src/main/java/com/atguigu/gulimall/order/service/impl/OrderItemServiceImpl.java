@@ -1,7 +1,12 @@
 package com.atguigu.gulimall.order.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.atguigu.gulimall.order.entity.OrderEntity;
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
 import java.util.Map;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -30,9 +35,14 @@ public class OrderItemServiceImpl extends ServiceImpl<OrderItemDao, OrderItemEnt
 
 
     @RabbitListener(queues = "hello.queue")
-    public  void Listen(Object msg){
+    public  void Listen(Message msg){
 
-        System.out.println("收到消息："+msg);
+        byte[] body = msg.getBody();
+        OrderEntity o = JSON.parseObject(body, OrderEntity.class);
+        System.out.println("收到消息："+ o);
+
+
+
 
 
     }
