@@ -15,6 +15,7 @@ spring:
     username: root
     password: 123456
 
+
   cloud:
     nacos:
       discovery:
@@ -22,8 +23,30 @@ spring:
         namespace: dev
   application:
     name: gulimall-order
+  thymeleaf:
+    cache: false
+
+
+  redis:
+    host: 192.168.101.128
+    port: 6379
+  cache:
+    type: redis
+    redis:
+      cache-null-values: true
+      use-key-prefix: true
+      time-to-live: 3600000
+  session:
+    store-type: redis
 mybatis-plus:
   mapper-locations: classpath:/mapper/**/*.xml
   global-config:
     db-config:
       id-type: auto
+
+
+gulimall:
+  thread:
+    coreSize: 20
+    maxSize: 200
+    keepAliveTime: 10
