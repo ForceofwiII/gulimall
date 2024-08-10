@@ -1,9 +1,11 @@
 package com.atguigu.gulimall.member.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import com.atguigu.common.exception.BizCodeEnume;
+import com.atguigu.gulimall.member.entity.MemberReceiveAddressEntity;
 import com.atguigu.gulimall.member.exception.PhoneException;
 import com.atguigu.gulimall.member.exception.UsernameException;
 import com.atguigu.gulimall.member.feign.CouponFeignService;
@@ -153,6 +155,12 @@ public class MemberController {
 
         return  R.ok().setData(member);
 
+    }
+
+    @GetMapping("/{id}/getAddress")
+    public List<MemberReceiveAddressEntity> getAddress(@PathVariable("id") Long id){
+        List<MemberReceiveAddressEntity> address = memberService.getAddress(id);
+        return address;
     }
 
 }

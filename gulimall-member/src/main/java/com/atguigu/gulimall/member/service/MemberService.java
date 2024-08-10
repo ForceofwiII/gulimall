@@ -1,5 +1,6 @@
 package com.atguigu.gulimall.member.service;
 
+import com.atguigu.gulimall.member.entity.MemberReceiveAddressEntity;
 import com.atguigu.gulimall.member.vo.GithubUser;
 import com.atguigu.gulimall.member.vo.GoogleUser;
 import com.atguigu.gulimall.member.vo.MemberRegisterVo;
@@ -8,6 +9,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.atguigu.common.utils.PageUtils;
 import com.atguigu.gulimall.member.entity.MemberEntity;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,5 +30,7 @@ public interface MemberService extends IService<MemberEntity> {
     MemberEntity githubLogin(GithubUser githubUser);
 
     MemberEntity googleLogin(GoogleUser googleUser);
+
+    List<MemberReceiveAddressEntity> getAddress(Long id);
 }
 

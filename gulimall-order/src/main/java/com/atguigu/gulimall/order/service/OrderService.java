@@ -1,5 +1,6 @@
 package com.atguigu.gulimall.order.service;
 
+import com.atguigu.common.vo.MemberEntityVo;
 import com.atguigu.gulimall.order.vo.OrderConfirmVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.atguigu.common.utils.PageUtils;
@@ -18,6 +19,6 @@ public interface OrderService extends IService<OrderEntity> {
 
     PageUtils queryPage(Map<String, Object> params);
 
-    OrderConfirmVo confirmOrder();
+    OrderConfirmVo confirmOrder(MemberEntityVo memberEntityVo);
 }
 

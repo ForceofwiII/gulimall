@@ -169,4 +169,14 @@ public class LoginController {
 
     }
 
+    @GetMapping("/loguot.html")
+    public String logout(HttpSession httpSession){
+
+        System.out.println("hello");
+
+        httpSession.invalidate();
+
+        return "redirect:http://gulimall.com";
+    }
+
 }

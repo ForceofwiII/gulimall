@@ -1,6 +1,8 @@
 package com.atguigu.gulimall.member.service.impl;
 
 import com.atguigu.gulimall.member.dao.MemberLevelDao;
+import com.atguigu.gulimall.member.dao.MemberReceiveAddressDao;
+import com.atguigu.gulimall.member.entity.MemberReceiveAddressEntity;
 import com.atguigu.gulimall.member.exception.PhoneException;
 import com.atguigu.gulimall.member.exception.UsernameException;
 import com.atguigu.gulimall.member.vo.GithubUser;
@@ -34,6 +36,10 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
 
     @Autowired
     MemberDao memberDao;
+
+
+    @Autowired
+    MemberReceiveAddressDao memberReceiveAddressDao;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -133,6 +139,15 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
 
 
         return memberEntity;
+    }
+
+    @Override
+    public List<MemberReceiveAddressEntity> getAddress(Long id) {
+
+
+
+      return   memberReceiveAddressDao.selectList(new QueryWrapper<MemberReceiveAddressEntity>().eq("member_id", id));
+
     }
 
 

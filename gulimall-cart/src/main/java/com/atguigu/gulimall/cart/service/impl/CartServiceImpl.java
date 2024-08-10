@@ -169,5 +169,27 @@ public class CartServiceImpl implements CartService {
 
   }
 
+    @Override
+    public List<CartItemVo> getCartItems(Long userId) {
+
+
+       String cartKey = CART_PREFIX + userId;
+      BoundHashOperations<String, Object, Object> operations = redisTemplate.boundHashOps(cartKey);
+      List<Object> values = operations.values();
+      List<CartItemVo> collect = values.stream().map((o) -> {
+        CartItemVo cartItemVo = JSON.parseObject((String) o, CartItemVo.class);
+        cartItemVo.setPrice(productFeign.getPrice(cartItemVo.getSkuId()));
+
+        return cartItemVo;
+
+      }).filter((o) -> {
+
+        return o.getCheck() == true;
+      }).collect(Collectors.toList());
+
+
+      return collect;
+    }
+
 
 }

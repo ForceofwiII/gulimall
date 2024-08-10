@@ -12,10 +12,13 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 
 import javax.servlet.http.HttpSession;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @Controller
@@ -77,6 +80,18 @@ public class CartController {
     public String deleteItem(@RequestParam("skuId") Long skuId){
         cartService.deleteItem(skuId);
         return "redirect:http://cart.gulimall.com/cart.html";
+    }
+
+    @GetMapping("/{userId}/getCartItems")
+    @ResponseBody
+    public List<CartItemVo> getCartItems( @PathVariable("userId") Long userId){
+
+
+        System.out.println(userId);
+
+
+        return cartService.getCartItems(userId);
+
     }
 
 

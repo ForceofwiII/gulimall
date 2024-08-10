@@ -36,6 +36,8 @@ public class OrderConfirmVo {
     @Getter @Setter
     Map<Long,Boolean> stocks;
 
+
+
     public Integer getCount() {
         Integer count = 0;
         if (items != null && items.size() > 0) {
@@ -48,7 +50,7 @@ public class OrderConfirmVo {
 
 
     /** 订单总额 **/
-    //BigDecimal total;
+    BigDecimal total;
     //计算订单总额
     public BigDecimal getTotal() {
         BigDecimal totalNum = BigDecimal.ZERO;
@@ -63,10 +65,18 @@ public class OrderConfirmVo {
         return totalNum;
     }
 
+    public void setTotal(){
+        this.total = getTotal();
+    }
+
 
     /** 应付价格 **/
-    //BigDecimal payPrice;
+    BigDecimal payPrice;
     public BigDecimal getPayPrice() {
         return getTotal();
+    }
+
+    public void setPayPrice(){
+        this.payPrice = getPayPrice();
     }
 }
