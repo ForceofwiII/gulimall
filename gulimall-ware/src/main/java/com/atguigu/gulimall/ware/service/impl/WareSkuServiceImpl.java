@@ -6,6 +6,7 @@ import com.atguigu.gulimall.ware.vo.SkuHasStockVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -110,6 +111,19 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
 
         return  collect;
 
+    }
+
+    @Override
+    public Map<Long, Boolean> listHasStock(List<Long> skuIds) {
+
+        Map<Long,Boolean> map = new HashMap<>();
+        if(skuIds != null && skuIds.size() > 0){
+            List<SkuHasStockVo> vos = hasstock(skuIds);
+            for (SkuHasStockVo vo : vos) {
+                map.put(vo.getSkuId(),vo.getHasStock());
+            }
+        }
+        return map;
     }
 
 }

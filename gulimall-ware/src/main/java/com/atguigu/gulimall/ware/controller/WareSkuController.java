@@ -41,6 +41,11 @@ public class WareSkuController {
 
     }
 
+    @PostMapping("/list/hasStock")
+    public Map<Long,Boolean> listHasStock(@RequestBody List<Long> skuIds){
+        return wareSkuService.listHasStock(skuIds);
+    }
+
 
 
     /**

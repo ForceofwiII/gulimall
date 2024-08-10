@@ -23,5 +23,7 @@ public interface WareSkuService extends IService<WareSkuEntity> {
 
 
     List<SkuHasStockVo> hasstock(List<Long> ids);
+
+    Map<Long, Boolean> listHasStock(List<Long> skuIds);
 }
 

@@ -3,14 +3,21 @@ package com.atguigu.gulimall.order.service.impl;
 import com.atguigu.common.vo.MemberEntityVo;
 import com.atguigu.gulimall.order.feign.CartFeign;
 import com.atguigu.gulimall.order.feign.MemberFeign;
+import com.atguigu.gulimall.order.feign.WareFeign;
 import com.atguigu.gulimall.order.vo.MemberAddressVo;
 import com.atguigu.gulimall.order.vo.OrderConfirmVo;
 import com.atguigu.gulimall.order.vo.OrderItemVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -31,6 +38,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
     @Autowired
     CartFeign cartFeign;
 
+
+    @Autowired
+    ThreadPoolExecutor executor;
+
+    @Autowired
+    WareFeign wareFeign;
+
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
         IPage<OrderEntity> page = this.page(
@@ -42,19 +56,44 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
     }
 
     @Override
-    public OrderConfirmVo confirmOrder(MemberEntityVo memberEntityVo) {
+    public OrderConfirmVo confirmOrder(MemberEntityVo memberEntityVo) throws ExecutionException, InterruptedException {
         //查出收货信息
         Long userid = memberEntityVo.getId();
         OrderConfirmVo orderConfirmVo  = new OrderConfirmVo();
-        List<MemberAddressVo> address = memberFeign.getAddress(userid);
-        orderConfirmVo.setMemberAddressVos(address);
+        CompletableFuture<Void> completableFuture = CompletableFuture.runAsync(() -> {
+            List<MemberAddressVo> address = memberFeign.getAddress(userid);
+            orderConfirmVo.setMemberAddressVos(address);
+        }, executor);
+
         //查出购物车中所有选中的购物项
-        List<OrderItemVo> cartItems = cartFeign.getCartItems(userid);
-        orderConfirmVo.setItems(cartItems);
+        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+
+            List<OrderItemVo> cartItems = cartFeign.getCartItems(userid);
+            orderConfirmVo.setItems(cartItems);
+            orderConfirmVo.setTotal();
+            orderConfirmVo.setPayPrice();
+
+
+        }).thenRunAsync(() -> {
+            //远程查询是否有库存
+            List<Long> skuIds = orderConfirmVo.getItems().stream().map((o) -> {
+                return o.getSkuId();
+            }).collect(Collectors.toList());
+            Map<Long, Boolean> stock = wareFeign.listHasStock(skuIds);
+
+            System.out.println(stock);
+
+            orderConfirmVo.setStocks(stock);
+
+        }, executor);
+
+
 
         orderConfirmVo.setIntegration(memberEntityVo.getIntegration());
-        orderConfirmVo.setTotal();
-        orderConfirmVo.setPayPrice();
+
+
+        CompletableFuture.allOf(completableFuture,future).get();
+
 
         //todo 防重令牌
 
