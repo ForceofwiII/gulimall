@@ -33,5 +33,7 @@ public interface SpuInfoService extends IService<SpuInfoEntity> {
 
 
     void up(Long id) throws IOException;
+
+    SpuInfoEntity getSpuInfoBySkuId(Long skuId);
 }
 

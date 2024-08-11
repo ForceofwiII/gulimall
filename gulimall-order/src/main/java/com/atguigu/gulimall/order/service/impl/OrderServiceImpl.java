@@ -1,10 +1,21 @@
 package com.atguigu.gulimall.order.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.lang.Snowflake;
+import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.IdcardUtil;
+import cn.hutool.http.HttpUtil;
+import com.alibaba.fastjson.TypeReference;
+import com.atguigu.common.utils.R;
 import com.atguigu.common.vo.MemberEntityVo;
 import com.atguigu.gulimall.order.Constant;
+import com.atguigu.gulimall.order.entity.OrderItemEntity;
+import com.atguigu.gulimall.order.enume.OrderStatusEnum;
 import com.atguigu.gulimall.order.feign.CartFeign;
 import com.atguigu.gulimall.order.feign.MemberFeign;
+import com.atguigu.gulimall.order.feign.ProductFeign;
 import com.atguigu.gulimall.order.feign.WareFeign;
+import com.atguigu.gulimall.order.to.OrderCreateTo;
 import com.atguigu.gulimall.order.vo.*;
 import org.apache.commons.lang.StringUtils;
 import org.redisson.api.RLock;
@@ -13,10 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.math.BigDecimal;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -56,6 +65,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
     @Autowired
     RedissonClient redissonClient;
+
+    @Autowired
+    ProductFeign productFeign;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -112,7 +124,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         String s = UUID.randomUUID().toString();
 
            orderConfirmVo.setOrderToken(s);
-        redisTemplate.opsForValue().setIfAbsent(Constant.USER_ORDER_TOKEN+userid, s,30, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(Constant.USER_ORDER_TOKEN+userid, s,30, TimeUnit.SECONDS);
 
 
 
@@ -121,9 +133,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         return orderConfirmVo;
     }
 
-    @Override
+    @Override //提交订单
     public SubmitOrderResponseVo submitOrder(OrderSubmitVo orderSubmitVo, Long userId) {
 
+        //1.保证订单只能提交一次
         SubmitOrderResponseVo responseVo = new SubmitOrderResponseVo();
         RLock rLock = redissonClient.getLock(userId.toString());
         rLock.lock();
@@ -147,8 +160,163 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         }
 
 
+        //2.创建订单
+        OrderCreateTo order = createOrder(orderSubmitVo, userId);
+        //2、验证价格
+        BigDecimal payAmount = order.getOrder().getPayAmount();
+        BigDecimal payPrice = orderSubmitVo.getPayPrice();
 
-        return null;
+        if (Math.abs(payAmount.subtract(payPrice).doubleValue()) > 0.01){
+            responseVo.setCode(2);
+            return responseVo;
+        }
+
+
+
+        return responseVo;
+
+    }
+
+    //创建订单
+    public OrderCreateTo createOrder(OrderSubmitVo orderSubmitVo, Long userId){
+
+        OrderCreateTo orderCreateTo = new OrderCreateTo();
+        //雪花算法生成订单号
+        Snowflake snowflake = IdUtil.getSnowflake(1, 1);
+        long l = snowflake.nextId();
+        OrderEntity order = new OrderEntity();
+        order.setOrderSn(String.valueOf(l));
+        //获取用户的收货地址
+        R r = wareFeign.getFare(orderSubmitVo.getAddrId());
+        FareVo fare = r.getData(new TypeReference<FareVo>() {
+        });
+        orderCreateTo.setFare(fare.getFare());
+        order.setFreightAmount(fare.getFare());
+        order.setReceiverDetailAddress(fare.getAddress().getDetailAddress());
+        order.setReceiverCity(fare.getAddress().getCity());
+        order.setReceiverName(fare.getAddress().getName());
+        order.setReceiverPhone(fare.getAddress().getPhone());
+        order.setReceiverPostCode(fare.getAddress().getPostCode());
+        order.setReceiverProvince(fare.getAddress().getProvince());
+        order.setReceiverRegion(fare.getAddress().getRegion());
+        order.setStatus(OrderStatusEnum.CREATE_NEW.getCode());
+
+        orderCreateTo.setOrder(order);
+
+        //获取用户的购物车信息
+        List<OrderItemVo> cartItems = cartFeign.getCartItems(userId);
+        List<OrderItemEntity> collect = new ArrayList<>();
+
+        if(cartItems!=null && cartItems.size()>0){
+
+            collect = cartItems.stream().map((o) -> {
+                OrderItemEntity orderItemEntity = new OrderItemEntity();
+                orderItemEntity.setSkuId(o.getSkuId());
+                orderItemEntity.setSkuName(o.getTitle());
+                orderItemEntity.setSkuAttrsVals(String.join(",",o.getSkuAttrValues()));
+                orderItemEntity.setSkuQuantity(o.getCount());
+                orderItemEntity.setSkuPrice(o.getPrice());
+                orderItemEntity.setSkuPic(o.getImage());
+                orderItemEntity.setGiftIntegration(o.getPrice().intValue());
+                orderItemEntity.setGiftGrowth(o.getPrice().intValue());
+                SpuInfoEntity spuInfoEntity = productFeign.infoBySkuId(o.getSkuId());
+                orderItemEntity.setSpuId(spuInfoEntity.getId());
+                orderItemEntity.setSpuName(spuInfoEntity.getSpuName());
+                orderItemEntity.setCategoryId(spuInfoEntity.getCatalogId());
+                orderItemEntity.setSpuBrand(spuInfoEntity.getBrandId().toString());
+
+                orderItemEntity.setIntegrationAmount(new BigDecimal("0"));
+                orderItemEntity.setCouponAmount(new BigDecimal("0"));
+
+                orderItemEntity.setPromotionAmount(new BigDecimal("0"));
+                orderItemEntity.setRealAmount(orderItemEntity.getSkuPrice().multiply(new BigDecimal(orderItemEntity.getSkuQuantity())));
+
+
+
+
+                orderItemEntity.setOrderSn(order.getOrderSn());
+                return orderItemEntity;
+            }).collect(Collectors.toList());
+
+            orderCreateTo.setOrderItems(collect);
+        }
+
+
+
+        //计算价格
+
+        computePrice(order,collect);
+
+
+        orderCreateTo.setOrder(order);
+        orderCreateTo.setOrderItems(collect);
+        orderCreateTo.setPayPrice(order.getPayAmount());
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return  orderCreateTo;
+
+
+
+    }
+
+    /**
+     * 计算价格的方法
+     * @param orderEntity
+     * @param orderItemEntities
+     */
+    private void computePrice(OrderEntity orderEntity, List<OrderItemEntity> orderItemEntities) {
+
+        //总价
+        BigDecimal total = new BigDecimal("0.0");
+        //优惠价
+        BigDecimal coupon = new BigDecimal("0.0");
+        BigDecimal intergration = new BigDecimal("0.0");
+        BigDecimal promotion = new BigDecimal("0.0");
+
+        //积分、成长值
+        Integer integrationTotal = 0;
+        Integer growthTotal = 0;
+
+        //订单总额，叠加每一个订单项的总额信息
+        for (OrderItemEntity orderItem : orderItemEntities) {
+            //优惠价格信息
+            coupon = coupon.add(orderItem.getCouponAmount());
+            promotion = promotion.add(orderItem.getPromotionAmount());
+            intergration = intergration.add(orderItem.getIntegrationAmount());
+
+            //总价
+            total = total.add(orderItem.getRealAmount());
+
+            //积分信息和成长值信息
+            integrationTotal += orderItem.getGiftIntegration();
+            growthTotal += orderItem.getGiftGrowth();
+
+        }
+        //1、订单价格相关的
+        orderEntity.setTotalAmount(total);
+        //设置应付总额(总额+运费)
+        orderEntity.setPayAmount(total.add(orderEntity.getFreightAmount()));
+        orderEntity.setCouponAmount(coupon);
+        orderEntity.setPromotionAmount(promotion);
+        orderEntity.setIntegrationAmount(intergration);
+
+        //设置积分成长值信息
+        orderEntity.setIntegration(integrationTotal);
+        orderEntity.setGrowth(growthTotal);
+
+        //设置删除状态(0-未删除，1-已删除)
+        orderEntity.setDeleteStatus(0);
 
     }
 
