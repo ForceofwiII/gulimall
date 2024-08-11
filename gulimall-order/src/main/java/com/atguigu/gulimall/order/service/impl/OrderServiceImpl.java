@@ -1,21 +1,26 @@
 package com.atguigu.gulimall.order.service.impl;
 
 import com.atguigu.common.vo.MemberEntityVo;
+import com.atguigu.gulimall.order.Constant;
 import com.atguigu.gulimall.order.feign.CartFeign;
 import com.atguigu.gulimall.order.feign.MemberFeign;
 import com.atguigu.gulimall.order.feign.WareFeign;
-import com.atguigu.gulimall.order.vo.MemberAddressVo;
-import com.atguigu.gulimall.order.vo.OrderConfirmVo;
-import com.atguigu.gulimall.order.vo.OrderItemVo;
+import com.atguigu.gulimall.order.vo.*;
+import org.apache.commons.lang.StringUtils;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -44,6 +49,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
     @Autowired
     WareFeign wareFeign;
+
+
+    @Autowired
+    StringRedisTemplate redisTemplate;
+
+    @Autowired
+    RedissonClient redissonClient;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -95,9 +107,49 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         CompletableFuture.allOf(completableFuture,future).get();
 
 
-        //todo 防重令牌
+        //todo 防重令牌保证幂等性
+
+        String s = UUID.randomUUID().toString();
+
+           orderConfirmVo.setOrderToken(s);
+        redisTemplate.opsForValue().setIfAbsent(Constant.USER_ORDER_TOKEN+userid, s,30, TimeUnit.SECONDS);
+
+
+
+
 
         return orderConfirmVo;
+    }
+
+    @Override
+    public SubmitOrderResponseVo submitOrder(OrderSubmitVo orderSubmitVo, Long userId) {
+
+        SubmitOrderResponseVo responseVo = new SubmitOrderResponseVo();
+        RLock rLock = redissonClient.getLock(userId.toString());
+        rLock.lock();
+        try{
+            //1.验证令牌
+            String s = redisTemplate.opsForValue().get(Constant.USER_ORDER_TOKEN + userId);
+            String orderToken = orderSubmitVo.getOrderToken();
+            if( s==null||  !StringUtils.equals(s,orderToken)){
+                //令牌不对
+
+                responseVo.setCode(1);
+                return responseVo;
+            }
+
+            redisTemplate.delete(Constant.USER_ORDER_TOKEN+userId);
+
+
+        }
+        finally {
+            rLock.unlock();
+        }
+
+
+
+        return null;
+
     }
 
 }

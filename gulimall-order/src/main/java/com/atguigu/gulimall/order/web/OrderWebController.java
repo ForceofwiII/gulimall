@@ -4,11 +4,16 @@ package com.atguigu.gulimall.order.web;
 import com.atguigu.common.vo.MemberEntityVo;
 import com.atguigu.gulimall.order.service.OrderService;
 import com.atguigu.gulimall.order.vo.OrderConfirmVo;
+import com.atguigu.gulimall.order.vo.OrderSubmitVo;
+import com.atguigu.gulimall.order.vo.SubmitOrderResponseVo;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import javax.servlet.http.HttpSession;
 
@@ -21,6 +26,10 @@ public class OrderWebController {
 
     @Autowired
     OrderService orderService;
+
+
+    @Autowired
+    RedissonClient redissonClient;
 
 
 
@@ -40,6 +49,32 @@ public class OrderWebController {
 
        model.addAttribute("confirmOrderData",orderConfirmVo);
         return "confirm";
+    }
+
+
+    @PostMapping("/submitOrder")
+    public  String submitOrder(OrderSubmitVo orderSubmitVo,HttpSession session){
+
+
+
+
+        MemberEntityVo memberEntityVo = (MemberEntityVo) session.getAttribute(LOGIN_USER);
+        Long userId = memberEntityVo.getId();
+
+        SubmitOrderResponseVo submitOrderResponseVo= orderService.submitOrder(orderSubmitVo,userId);
+
+
+         if(submitOrderResponseVo.getCode()!=0){
+             return "redirect:http://order.gulimall.com/toTrade"; //支付失败,重定向到订单确认页
+         }
+
+
+
+         return null;
+
+
+
+
     }
 
 

@@ -1,11 +1,16 @@
 package com.atguigu.gulimall.ware.controller;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Random;
 
 import cn.hutool.core.util.RandomUtil;
+import com.alibaba.fastjson.TypeReference;
+import com.atguigu.gulimall.ware.feign.MemberFeign;
+import com.atguigu.gulimall.ware.vo.FareVo;
+import com.atguigu.gulimall.ware.vo.MemberAddressVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +33,9 @@ import com.atguigu.common.utils.R;
 public class WareInfoController {
     @Autowired
     private WareInfoService wareInfoService;
+
+    @Autowired
+    MemberFeign memberFeign;
 
     /**
      * 列表
@@ -87,9 +95,20 @@ public class WareInfoController {
 
 
     @GetMapping("/fare")
-    public BigDecimal getFare(@RequestParam("addrId") Long addrId){
+    public R getFare(@RequestParam("addrId") Long addrId){
 
-      return   RandomUtil.randomBigDecimal(BigDecimal.ZERO,BigDecimal.TEN);
+
+        FareVo fareVo = new FareVo();
+        fareVo.setFare(BigDecimal.valueOf(RandomUtil.randomDouble(0,10)).setScale(1, RoundingMode.HALF_UP));
+
+
+        fareVo.setAddress(memberFeign.info(addrId).getData("memberReceiveAddress",new TypeReference<MemberAddressVo>(){}));
+        System.out.println(fareVo.getAddress());
+        System.out.println(addrId);
+
+      return   R.ok().setData(fareVo);
+
+
 
     }
 
