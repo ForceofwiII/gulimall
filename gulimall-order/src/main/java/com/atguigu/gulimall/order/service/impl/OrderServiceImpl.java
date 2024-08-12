@@ -9,12 +9,14 @@ import com.alibaba.fastjson.TypeReference;
 import com.atguigu.common.utils.R;
 import com.atguigu.common.vo.MemberEntityVo;
 import com.atguigu.gulimall.order.Constant;
+import com.atguigu.gulimall.order.dao.OrderItemDao;
 import com.atguigu.gulimall.order.entity.OrderItemEntity;
 import com.atguigu.gulimall.order.enume.OrderStatusEnum;
 import com.atguigu.gulimall.order.feign.CartFeign;
 import com.atguigu.gulimall.order.feign.MemberFeign;
 import com.atguigu.gulimall.order.feign.ProductFeign;
 import com.atguigu.gulimall.order.feign.WareFeign;
+import com.atguigu.gulimall.order.service.OrderItemService;
 import com.atguigu.gulimall.order.to.OrderCreateTo;
 import com.atguigu.gulimall.order.vo.*;
 import org.apache.commons.lang.StringUtils;
@@ -25,6 +27,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -41,6 +44,7 @@ import com.atguigu.common.utils.Query;
 import com.atguigu.gulimall.order.dao.OrderDao;
 import com.atguigu.gulimall.order.entity.OrderEntity;
 import com.atguigu.gulimall.order.service.OrderService;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Service("orderService")
@@ -68,6 +72,13 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
     @Autowired
     ProductFeign productFeign;
+
+      @Autowired
+      OrderDao orderDao;
+
+
+      @Autowired
+    OrderItemService orderItemService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -134,6 +145,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
     }
 
     @Override //提交订单
+    @Transactional(rollbackFor = Exception.class)
     public SubmitOrderResponseVo submitOrder(OrderSubmitVo orderSubmitVo, Long userId) {
 
         //1.保证订单只能提交一次
@@ -171,6 +183,38 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
             return responseVo;
         }
 
+        //保存订单
+        OrderEntity orderEntity = order.getOrder();
+        List<OrderItemEntity> orderItems = order.getOrderItems();
+
+        orderEntity.setModifyTime(new Date());
+        orderDao.insert(orderEntity);
+        orderItemService.saveBatch(orderItems);
+        //3.锁定库存
+
+        WareSkuLockVo wareSkuLockVo = new WareSkuLockVo();
+        wareSkuLockVo.setOrderSn(orderEntity.getOrderSn());
+        List<OrderItemVo> collect = orderItems.stream().map((o) -> {
+
+            OrderItemVo orderItemVo = new OrderItemVo();
+            orderItemVo.setSkuId(o.getSkuId());
+            orderItemVo.setCount(o.getSkuQuantity());
+            orderItemVo.setTitle(o.getSpuName());
+
+
+            return orderItemVo;
+        }).collect(Collectors.toList());
+
+          wareSkuLockVo.setLocks(collect);
+
+        R r = wareFeign.orderLockStock(wareSkuLockVo);
+        if(r.getCode()!=0){
+            //锁定失败
+            responseVo.setCode(3);
+            return responseVo;
+        }
+        responseVo.setCode(0);
+        responseVo.setOrder(orderEntity);
 
 
         return responseVo;
@@ -190,7 +234,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         R r = wareFeign.getFare(orderSubmitVo.getAddrId());
         FareVo fare = r.getData(new TypeReference<FareVo>() {
         });
+
         orderCreateTo.setFare(fare.getFare());
+        order.setMemberId(userId);
         order.setFreightAmount(fare.getFare());
         order.setReceiverDetailAddress(fare.getAddress().getDetailAddress());
         order.setReceiverCity(fare.getAddress().getCity());
@@ -201,7 +247,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         order.setReceiverRegion(fare.getAddress().getRegion());
         order.setStatus(OrderStatusEnum.CREATE_NEW.getCode());
 
-        orderCreateTo.setOrder(order);
+
 
         //获取用户的购物车信息
         List<OrderItemVo> cartItems = cartFeign.getCartItems(userId);

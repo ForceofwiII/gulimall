@@ -53,7 +53,7 @@ public class OrderWebController {
 
 
     @PostMapping("/submitOrder")
-    public  String submitOrder(OrderSubmitVo orderSubmitVo,HttpSession session){
+    public  String submitOrder(OrderSubmitVo orderSubmitVo,HttpSession session, Model model){
 
 
 
@@ -65,12 +65,14 @@ public class OrderWebController {
 
 
          if(submitOrderResponseVo.getCode()!=0){
-             return "redirect:http://order.gulimall.com/toTrade"; //支付失败,重定向到订单确认页
+             return "redirect:http://order.gulimall.com/toTrade"; //订单提交失败,重定向到订单确认页
          }
 
+         model.addAttribute("submitOrderResp",submitOrderResponseVo);
 
 
-         return null;
+
+         return "pay";
 
 
 

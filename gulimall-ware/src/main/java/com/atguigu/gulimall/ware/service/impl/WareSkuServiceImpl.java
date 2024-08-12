@@ -2,7 +2,11 @@ package com.atguigu.gulimall.ware.service.impl;
 
 import com.atguigu.common.utils.R;
 import com.atguigu.gulimall.ware.feign.ProductFeignService;
+import com.atguigu.gulimall.ware.vo.LockStockResultVo;
+import com.atguigu.gulimall.ware.vo.OrderItemVo;
 import com.atguigu.gulimall.ware.vo.SkuHasStockVo;
+import com.atguigu.gulimall.ware.vo.WareSkuLockVo;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +25,7 @@ import com.atguigu.common.utils.Query;
 import com.atguigu.gulimall.ware.dao.WareSkuDao;
 import com.atguigu.gulimall.ware.entity.WareSkuEntity;
 import com.atguigu.gulimall.ware.service.WareSkuService;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 
@@ -125,5 +130,46 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
         }
         return map;
     }
+
+    @Override  //锁定库存
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean orderLockStock(WareSkuLockVo vo) {
+        Boolean locked = false;
+
+        List<OrderItemVo> locks = vo.getLocks();
+        List<LockStockResultVo> collect = locks.stream().map((o) -> {
+            LockStockResultVo resultVo = new LockStockResultVo();
+            resultVo.setSkuId(o.getSkuId());
+            //查询所有有库存的仓库
+            List<Long> ids = wareSkuDao.hasStock(o.getSkuId(), o.getCount());
+            if (ids == null || ids.size() == 0) {
+                throw new RuntimeException(o.getTitle() + "库存不足");
+            }
+            for (Long id : ids) {
+                int count=   wareSkuDao.lockStock(id, o.getCount(), o.getSkuId());
+                if(count==0) {
+                    resultVo.setLocked(false);
+
+                }
+                else {
+                    resultVo.setLocked(true);
+                    break;
+                }
+
+            }
+            if(resultVo.getLocked()==false){
+                throw new RuntimeException(o.getTitle() + "库存不足");
+            }
+
+            resultVo.setNum(o.getCount());
+
+
+            return resultVo;
+        }).collect(Collectors.toList());
+
+        return true;
+    }
+
+
 
 }
