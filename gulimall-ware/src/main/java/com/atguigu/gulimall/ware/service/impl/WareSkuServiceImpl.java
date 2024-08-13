@@ -1,15 +1,27 @@
 package com.atguigu.gulimall.ware.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.atguigu.common.to.mq.StockDetailTo;
+import com.atguigu.common.to.mq.StockLockedTo;
 import com.atguigu.common.utils.R;
+import com.atguigu.gulimall.ware.dao.WareOrderTaskDao;
+import com.atguigu.gulimall.ware.dao.WareOrderTaskDetailDao;
+import com.atguigu.gulimall.ware.entity.WareOrderTaskDetailEntity;
+import com.atguigu.gulimall.ware.entity.WareOrderTaskEntity;
 import com.atguigu.gulimall.ware.feign.ProductFeignService;
 import com.atguigu.gulimall.ware.vo.LockStockResultVo;
 import com.atguigu.gulimall.ware.vo.OrderItemVo;
 import com.atguigu.gulimall.ware.vo.SkuHasStockVo;
 import com.atguigu.gulimall.ware.vo.WareSkuLockVo;
 import lombok.Data;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +49,16 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
 
     @Autowired
     ProductFeignService productFeignService;
+
+    @Autowired
+    RabbitTemplate rabbitTemplate;
+
+
+    @Autowired
+    WareOrderTaskDao wareOrderTaskDao;
+
+    @Autowired
+    WareOrderTaskDetailDao wareOrderTaskDetailDao;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -136,6 +158,11 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
     public Boolean orderLockStock(WareSkuLockVo vo) {
         Boolean locked = false;
 
+        WareOrderTaskEntity wareOrderTaskEntity = new WareOrderTaskEntity();
+        wareOrderTaskEntity.setOrderSn(vo.getOrderSn());
+        wareOrderTaskDao.insert(wareOrderTaskEntity);
+        List<WareOrderTaskDetailEntity> list = new ArrayList<>();
+
         List<OrderItemVo> locks = vo.getLocks();
         List<LockStockResultVo> collect = locks.stream().map((o) -> {
             LockStockResultVo resultVo = new LockStockResultVo();
@@ -153,6 +180,16 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
                 }
                 else {
                     resultVo.setLocked(true);
+
+                    WareOrderTaskDetailEntity wareOrderTaskDetailEntity = new WareOrderTaskDetailEntity();
+                    wareOrderTaskDetailEntity.setSkuId(o.getSkuId());
+                    wareOrderTaskDetailEntity.setSkuName(o.getTitle());
+                    wareOrderTaskDetailEntity.setSkuNum(o.getCount());
+                    wareOrderTaskDetailEntity.setWareId(id);
+                    wareOrderTaskDetailEntity.setTaskId(wareOrderTaskEntity.getId());
+                    wareOrderTaskDetailDao.insert(wareOrderTaskDetailEntity);
+                    list.add(wareOrderTaskDetailEntity);
+
                     break;
                 }
 
@@ -167,7 +204,30 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
             return resultVo;
         }).collect(Collectors.toList());
 
+
+        //todo 所有订单项都锁定库存了发送延迟消息来自动解锁库存
+        StockLockedTo stockLockedTo = new StockLockedTo();
+        stockLockedTo.setId(wareOrderTaskEntity.getId());
+        List<StockDetailTo> tos = list.stream().map((o) -> {
+            StockDetailTo stockDetailTo = new StockDetailTo();
+            BeanUtils.copyProperties(o, stockDetailTo);
+            return stockDetailTo;
+        }).collect(Collectors.toList());
+
+        stockLockedTo.setDetailTos(tos);
+        rabbitTemplate.convertAndSend("stock-event-exchange", "stock.release.locked", stockLockedTo, message -> {
+            message.getMessageProperties().setDelay(0); //延迟10分钟
+            return message;
+        });
+
         return true;
+    }
+
+    @RabbitListener(queues = "stock.release.stock.queue")
+    public void unlockStock(Message message){
+
+          StockLockedTo stockLockedTo  = JSON.parseObject(message.getBody(), StockLockedTo.class);
+        System.out.println("收到消息"+stockLockedTo);
     }
 
 
