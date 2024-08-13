@@ -12,6 +12,12 @@ spring:
       discovery:
         server-addr: 192.168.101.128:8848
         namespace: dev
+  rabbitmq:
+    host: 192.168.101.128
+    port: 5672
+    virtual-host: /
+    username: root
+    password: 123456
 
 
 

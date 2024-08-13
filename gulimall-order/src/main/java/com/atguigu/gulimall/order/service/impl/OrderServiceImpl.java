@@ -174,14 +174,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
         //2.创建订单
         OrderCreateTo order = createOrder(orderSubmitVo, userId);
-        //2、验证价格
-        BigDecimal payAmount = order.getOrder().getPayAmount();
-        BigDecimal payPrice = orderSubmitVo.getPayPrice();
+//        //2、验证价格
+//        BigDecimal payAmount = order.getOrder().getPayAmount();
+//        BigDecimal payPrice = orderSubmitVo.getPayPrice();
 
-        if (Math.abs(payAmount.subtract(payPrice).doubleValue()) > 0.01){
-            responseVo.setCode(2);
-            return responseVo;
-        }
+//        if (Math.abs(payAmount.subtract(payPrice).doubleValue()) > 0.01){
+//            responseVo.setCode(2);
+//            return responseVo;
+//        }
 
         //保存订单
         OrderEntity orderEntity = order.getOrder();
@@ -212,6 +212,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
             //锁定失败
             responseVo.setCode(3);
             return responseVo;
+
         }
         responseVo.setCode(0);
         responseVo.setOrder(orderEntity);
@@ -221,7 +222,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
     }
 
-    //创建订单
+    //创建要保存订单数据
     public OrderCreateTo createOrder(OrderSubmitVo orderSubmitVo, Long userId){
 
         OrderCreateTo orderCreateTo = new OrderCreateTo();

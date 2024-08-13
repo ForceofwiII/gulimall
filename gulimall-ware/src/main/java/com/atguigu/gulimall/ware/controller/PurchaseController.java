@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.atguigu.gulimall.ware.vo.MergeVo;
 import com.atguigu.gulimall.ware.vo.PurchaseDoneVo;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +30,8 @@ import com.atguigu.common.utils.R;
 public class PurchaseController {
     @Autowired
     private PurchaseService purchaseService;
+
+
 
     ///ware/purchase/done
     @PostMapping("/done")

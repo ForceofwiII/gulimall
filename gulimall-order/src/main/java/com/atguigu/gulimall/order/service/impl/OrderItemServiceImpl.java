@@ -34,17 +34,6 @@ public class OrderItemServiceImpl extends ServiceImpl<OrderItemDao, OrderItemEnt
 
 
 
-    @RabbitListener(queues = "hello.queue")
-    public  void Listen(Message msg){
 
-        byte[] body = msg.getBody();
-        OrderEntity o = JSON.parseObject(body, OrderEntity.class);
-        System.out.println("收到消息："+ o);
-
-
-
-
-
-    }
 
 }

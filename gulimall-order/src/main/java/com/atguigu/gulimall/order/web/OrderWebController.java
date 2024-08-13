@@ -61,10 +61,12 @@ public class OrderWebController {
         MemberEntityVo memberEntityVo = (MemberEntityVo) session.getAttribute(LOGIN_USER);
         Long userId = memberEntityVo.getId();
 
+
         SubmitOrderResponseVo submitOrderResponseVo= orderService.submitOrder(orderSubmitVo,userId);
 
 
          if(submitOrderResponseVo.getCode()!=0){
+             System.out.println(submitOrderResponseVo.getCode());
              return "redirect:http://order.gulimall.com/toTrade"; //订单提交失败,重定向到订单确认页
          }
 
