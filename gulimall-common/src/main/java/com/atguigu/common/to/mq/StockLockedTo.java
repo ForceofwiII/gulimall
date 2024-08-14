@@ -17,6 +17,9 @@ public class StockLockedTo {
     /** 库存工作单的id **/
     private Long id;
 
+    //订单号
+    private String orderSn;
+
     /** 工作单详情的所有信息 **/
     private List<StockDetailTo> detailTos;
 }

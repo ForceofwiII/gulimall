@@ -8,11 +8,9 @@ import com.atguigu.gulimall.ware.dao.WareOrderTaskDao;
 import com.atguigu.gulimall.ware.dao.WareOrderTaskDetailDao;
 import com.atguigu.gulimall.ware.entity.WareOrderTaskDetailEntity;
 import com.atguigu.gulimall.ware.entity.WareOrderTaskEntity;
+import com.atguigu.gulimall.ware.feign.OrderFeign;
 import com.atguigu.gulimall.ware.feign.ProductFeignService;
-import com.atguigu.gulimall.ware.vo.LockStockResultVo;
-import com.atguigu.gulimall.ware.vo.OrderItemVo;
-import com.atguigu.gulimall.ware.vo.SkuHasStockVo;
-import com.atguigu.gulimall.ware.vo.WareSkuLockVo;
+import com.atguigu.gulimall.ware.vo.*;
 import lombok.Data;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -59,6 +57,9 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
 
     @Autowired
     WareOrderTaskDetailDao wareOrderTaskDetailDao;
+
+    @Autowired
+    OrderFeign orderFeign;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -215,20 +216,17 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
         }).collect(Collectors.toList());
 
         stockLockedTo.setDetailTos(tos);
+        stockLockedTo.setOrderSn(vo.getOrderSn());
         rabbitTemplate.convertAndSend("stock-event-exchange", "stock.release.locked", stockLockedTo, message -> {
-            message.getMessageProperties().setDelay(0); //延迟10分钟
+            message.getMessageProperties().setDelay(60000); //延迟1分钟
             return message;
         });
 
         return true;
     }
 
-    @RabbitListener(queues = "stock.release.stock.queue")
-    public void unlockStock(Message message){
 
-          StockLockedTo stockLockedTo  = JSON.parseObject(message.getBody(), StockLockedTo.class);
-        System.out.println("收到消息"+stockLockedTo);
-    }
+
 
 
 

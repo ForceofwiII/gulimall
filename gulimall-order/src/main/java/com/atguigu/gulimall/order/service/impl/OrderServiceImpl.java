@@ -22,6 +22,7 @@ import com.atguigu.gulimall.order.vo.*;
 import org.apache.commons.lang.StringUtils;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -79,6 +80,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
       @Autowired
     OrderItemService orderItemService;
+
+      @Autowired
+    RabbitTemplate rabbitTemplate;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -190,6 +194,11 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         orderEntity.setModifyTime(new Date());
         orderDao.insert(orderEntity);
         orderItemService.saveBatch(orderItems);
+        //发延迟消息 自动取消订单
+        rabbitTemplate.convertAndSend("order-event-exchange","order.release.order",orderEntity,(msg)->{
+            msg.getMessageProperties().setDelay(6000);
+            return msg;
+        });
         //3.锁定库存
 
         WareSkuLockVo wareSkuLockVo = new WareSkuLockVo();
@@ -219,6 +228,15 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
 
         return responseVo;
+
+    }
+
+    @Override
+    public OrderEntity getOrderByOrderSn(String orderSn) {
+
+
+        return orderDao.selectOne(new QueryWrapper<OrderEntity>().eq("order_sn",orderSn));
+
 
     }
 
