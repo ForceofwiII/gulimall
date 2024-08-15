@@ -3,6 +3,7 @@ package com.atguigu.gulimall.ware.dao;
 import com.atguigu.gulimall.ware.entity.WareOrderTaskEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
 
 /**
  * 库存工作单
@@ -13,5 +14,9 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface WareOrderTaskDao extends BaseMapper<WareOrderTaskEntity> {
-	
+
+
+
+    @Select("select  id from wms_ware_order_task where order_sn=#{orderSn}")
+    Long getByOrderSn(String orderSn);
 }

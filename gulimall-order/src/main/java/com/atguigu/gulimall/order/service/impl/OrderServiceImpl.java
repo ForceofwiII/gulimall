@@ -196,9 +196,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         orderItemService.saveBatch(orderItems);
         //发延迟消息 自动取消订单
         rabbitTemplate.convertAndSend("order-event-exchange","order.release.order",orderEntity,(msg)->{
-            msg.getMessageProperties().setDelay(6000);
+            msg.getMessageProperties().setDelay(300000); //5分钟
             return msg;
         });
+        System.out.println("发送成功");
         //3.锁定库存
 
         WareSkuLockVo wareSkuLockVo = new WareSkuLockVo();

@@ -21,6 +21,11 @@ spring:
 
 
 
+
+
+
+
+
   application:
     name: gulimall-ware
 

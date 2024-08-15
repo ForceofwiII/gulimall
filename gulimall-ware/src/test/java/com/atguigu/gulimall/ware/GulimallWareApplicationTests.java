@@ -3,6 +3,7 @@ package com.atguigu.gulimall.ware;
 import com.atguigu.gulimall.ware.entity.PurchaseEntity;
 import com.atguigu.gulimall.ware.service.PurchaseService;
 import com.atguigu.gulimall.ware.service.WareSkuService;
+import com.atguigu.gulimall.ware.vo.OrderEntity;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -25,7 +26,16 @@ public class GulimallWareApplicationTests {
     public void contextLoads() {
 
 
-        rabbitTemplate.convertAndSend("hello.direct","hello","hello");
+
+
+
+        try{
+            rabbitTemplate.convertAndSend("hello.direct","hello","hello");
+        }
+        catch (Exception e){
+            System.out.println("error");
+        }
+
 
     }
 

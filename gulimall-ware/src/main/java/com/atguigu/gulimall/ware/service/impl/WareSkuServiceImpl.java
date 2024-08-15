@@ -212,13 +212,14 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
         List<StockDetailTo> tos = list.stream().map((o) -> {
             StockDetailTo stockDetailTo = new StockDetailTo();
             BeanUtils.copyProperties(o, stockDetailTo);
+            stockDetailTo.setTaskDetailId(o.getId());
             return stockDetailTo;
         }).collect(Collectors.toList());
 
         stockLockedTo.setDetailTos(tos);
         stockLockedTo.setOrderSn(vo.getOrderSn());
         rabbitTemplate.convertAndSend("stock-event-exchange", "stock.release.locked", stockLockedTo, message -> {
-            message.getMessageProperties().setDelay(60000); //延迟1分钟
+            message.getMessageProperties().setDelay(600000); //延迟10分钟
             return message;
         });
 

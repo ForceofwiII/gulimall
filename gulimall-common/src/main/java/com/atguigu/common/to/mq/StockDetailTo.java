@@ -40,4 +40,7 @@ public class StockDetailTo {
      */
     private Integer lockStatus;
 
+
+    private Long taskDetailId;
+
 }
