@@ -31,7 +31,7 @@ public class AlipayTemplate {
 
     // 页面跳转同步通知页面路径 需http://格式的完整路径，不能加?id=123这类自定义参数，必须外网可以正常访问
     //同步通知，支付成功，一般跳转到成功页
-    public String return_url="http://localhost:8020/order/pay/success";
+    public String return_url="http://member.gulimall.com/memberOrder.html";
 
     // 签名方式
     private  String sign_type="RSA2";
@@ -40,7 +40,7 @@ public class AlipayTemplate {
     private  String charset="utf-8";
 
     //订单超时时间
-    private String timeout = "1m";
+    private String timeout = "5m";
 
     // 支付宝网关； https://openapi.alipaydev.com/gateway.do
     public String gatewayUrl="https://openapi-sandbox.dl.alipaydev.com/gateway.do" ;
@@ -55,41 +55,43 @@ public class AlipayTemplate {
 
         //2、创建一个支付请求 //设置请求参数
         AlipayTradePagePayRequest alipayRequest = new AlipayTradePagePayRequest();
-        AlipayTradePagePayModel model = new AlipayTradePagePayModel();
-        model.setOutTradeNo(vo.getOut_trade_no());
-        model.setTotalAmount(vo.getTotal_amount());
-        model.setSubject(vo.getSubject());
-      //  model.setBody(vo.getBody());
-        model.setProductCode("FAST_INSTANT_TRADE_PAY");
-       // model.setTimeExpire(timeout);
-        alipayRequest.setBizModel(model);
+//        AlipayTradePagePayModel model = new AlipayTradePagePayModel();
+//        model.setOutTradeNo(vo.getOut_trade_no());
+//        model.setTotalAmount(vo.getTotal_amount());
+//        model.setSubject(vo.getSubject());
+//      //  model.setBody(vo.getBody());
+//        model.setProductCode("FAST_INSTANT_TRADE_PAY");
+//       // model.setTimeExpire(timeout);
+//        alipayRequest.setBizModel(model);
 
-        AlipayTradePagePayResponse response = alipayClient.pageExecute(alipayRequest, "POST");
-//        alipayRequest.setReturnUrl(return_url);
-//        alipayRequest.setNotifyUrl(notify_url);
-//
-//        //商户订单号，商户网站订单系统中唯一订单号，必填
-//        String out_trade_no = vo.getOut_trade_no();
-//        //付款金额，必填
-//        String total_amount = vo.getTotal_amount();
-//        //订单名称，必填
-//        String subject = vo.getSubject();
-//        //商品描述，可空
-//        String body = vo.getBody();
-//
-//        alipayRequest.setBizContent("{\"out_trade_no\":\""+ out_trade_no +"\","
-//                + "\"total_amount\":\""+ total_amount +"\","
-//                + "\"subject\":\""+ subject +"\","
-//                + "\"body\":\""+ body +"\","
-//                + "\"timeout_express\":\""+timeout+"\","
-//                + "\"product_code\":\"FAST_INSTANT_TRADE_PAY\"}");
-//
-//        AlipayTradePagePayResponse response = alipayClient.pageExecute(alipayRequest);
+    //    AlipayTradePagePayResponse response = alipayClient.pageExecute(alipayRequest, "POST");
+        alipayRequest.setReturnUrl(return_url);
+        alipayRequest.setNotifyUrl(notify_url);
+
+        //商户订单号，商户网站订单系统中唯一订单号，必填
+        String out_trade_no = vo.getOut_trade_no();
+        //付款金额，必填
+        String total_amount = vo.getTotal_amount();
+        //订单名称，必填
+        String subject = vo.getSubject();
+        //商品描述，可空
+        String body = vo.getBody();
+
+        alipayRequest.setBizContent("{\"out_trade_no\":\""+ out_trade_no +"\","
+                + "\"total_amount\":\""+ total_amount +"\","
+                + "\"subject\":\""+ subject +"\","
+                + "\"body\":\""+ body +"\","
+                + "\"timeout_express\":\""+timeout+"\","
+                + "\"product_code\":\"FAST_INSTANT_TRADE_PAY\"}");
+
+        //返回支付页面的url
+//        AlipayTradePagePayResponse response = alipayClient.sdkExecute(alipayRequest);
+//        String result =      "https://openapi-sandbox.dl.alipaydev.com/gateway.do"+"?"+response.getBody();
 
 
+        //返回支付页面的html
 
-
-       // String result =      "https://openapi-sandbox.dl.alipaydev.com/gateway.do"+"?"+response.getBody();
+        AlipayTradePagePayResponse response = alipayClient.pageExecute(alipayRequest);
         String result = response.getBody();
 
         //会收到支付宝的响应，响应的是一个页面，只要浏览器显示这个页面，就会自动来到支付宝的收银台页面

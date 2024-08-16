@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.atguigu.common.exception.BizCodeEnume;
+import com.atguigu.common.vo.MemberEntityVo;
 import com.atguigu.gulimall.member.entity.MemberReceiveAddressEntity;
 import com.atguigu.gulimall.member.exception.PhoneException;
 import com.atguigu.gulimall.member.exception.UsernameException;
@@ -14,6 +15,7 @@ import com.atguigu.gulimall.member.vo.GoogleUser;
 import com.atguigu.gulimall.member.vo.MemberRegisterVo;
 import com.atguigu.gulimall.member.vo.UserLoginVo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import com.atguigu.gulimall.member.entity.MemberEntity;
@@ -21,6 +23,9 @@ import com.atguigu.gulimall.member.service.MemberService;
 import com.atguigu.common.utils.PageUtils;
 import com.atguigu.common.utils.R;
 
+import javax.servlet.http.HttpSession;
+
+import static com.atguigu.common.constant.AuthServerConstant.LOGIN_USER;
 
 
 /**
@@ -162,5 +167,17 @@ public class MemberController {
         List<MemberReceiveAddressEntity> address = memberService.getAddress(id);
         return address;
     }
+
+
+    @GetMapping("/memberOrder.html")
+    public String memberOrder(HttpSession session , Model model){
+
+        //查出当前用户的所有订单信息
+        MemberEntityVo attribute =  (MemberEntityVo)   session.getAttribute(LOGIN_USER);
+
+
+        return "orderList";
+    }
+
 
 }

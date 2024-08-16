@@ -1,6 +1,9 @@
 package com.atguigu.common.vo;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.io.Serializable;
@@ -15,6 +18,8 @@ import java.util.Date;
  */
 @Data
 @ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class MemberEntityVo implements Serializable {
 
 	/**

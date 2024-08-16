@@ -1,6 +1,8 @@
 package com.atguigu.gulimall.order.web;
 
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.parser.ParserConfig;
 import com.atguigu.common.vo.MemberEntityVo;
 import com.atguigu.gulimall.order.service.OrderService;
 import com.atguigu.gulimall.order.vo.OrderConfirmVo;
@@ -43,7 +45,11 @@ public class OrderWebController {
     public String toTrade(HttpSession session , Model model) throws ExecutionException, InterruptedException {
 
 
-        MemberEntityVo memberEntityVo = (MemberEntityVo) session.getAttribute(LOGIN_USER);
+
+
+
+
+         MemberEntityVo memberEntityVo = (MemberEntityVo) session.getAttribute(LOGIN_USER);
 
         OrderConfirmVo orderConfirmVo= orderService.confirmOrder(memberEntityVo);
 
@@ -58,7 +64,11 @@ public class OrderWebController {
 
 
 
+
+
         MemberEntityVo memberEntityVo = (MemberEntityVo) session.getAttribute(LOGIN_USER);
+
+
         Long userId = memberEntityVo.getId();
 
 
