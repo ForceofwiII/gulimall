@@ -69,7 +69,7 @@ public class UnlockStock {
     }
 
 
-    @RabbitHandler
+   // @RabbitHandler
     public void autoUnlockStock2(OrderEntity order){
 
          System.out.println("收到消息"+order);
