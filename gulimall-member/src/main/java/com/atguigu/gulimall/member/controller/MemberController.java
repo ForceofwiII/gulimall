@@ -1,6 +1,7 @@
 package com.atguigu.gulimall.member.controller;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -10,6 +11,7 @@ import com.atguigu.gulimall.member.entity.MemberReceiveAddressEntity;
 import com.atguigu.gulimall.member.exception.PhoneException;
 import com.atguigu.gulimall.member.exception.UsernameException;
 import com.atguigu.gulimall.member.feign.CouponFeignService;
+import com.atguigu.gulimall.member.feign.OrderFeign;
 import com.atguigu.gulimall.member.vo.GithubUser;
 import com.atguigu.gulimall.member.vo.GoogleUser;
 import com.atguigu.gulimall.member.vo.MemberRegisterVo;
@@ -40,6 +42,9 @@ import static com.atguigu.common.constant.AuthServerConstant.LOGIN_USER;
 public class MemberController {
     @Autowired
     private MemberService memberService;
+
+    @Autowired
+    OrderFeign orderFeign;
 
 //    @Autowired
 //    CouponFeignService couponFeignService;
@@ -169,15 +174,7 @@ public class MemberController {
     }
 
 
-    @GetMapping("/memberOrder.html")  //处理支付完成后的请求
-    public String memberOrder(HttpSession session , Model model){
 
-        //查出当前用户的所有订单信息
-        MemberEntityVo attribute =  (MemberEntityVo)   session.getAttribute(LOGIN_USER);
-
-
-        return "orderList";
-    }
 
 
 }
