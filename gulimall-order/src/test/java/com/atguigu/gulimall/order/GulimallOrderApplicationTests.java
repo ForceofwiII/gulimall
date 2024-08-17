@@ -83,7 +83,7 @@ public class GulimallOrderApplicationTests {
 
           // System.out.println(diagnosisUrl);
         PayVo payVo = new PayVo();
-        payVo.setOut_trade_no("2020080100012");
+        payVo.setOut_trade_no("2020080100022");
         payVo.setSubject("test");
         payVo.setTotal_amount("88");
         payVo.setBody("test");

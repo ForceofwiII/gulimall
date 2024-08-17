@@ -32,22 +32,24 @@ public class PayOrderController {
 
 
     @ResponseBody
-    @GetMapping( value = "/payOrder", produces = "text/html")
+    @GetMapping( value = "/aliPayOrder", produces = "text/html")
     public String payOrder(@RequestParam("orderSn") String orderSn) throws AlipayApiException {
 
 
         PayVo payVo = new PayVo();
         payVo.setOut_trade_no(orderSn);
         OrderEntity orderEntity = orderService.getOrderByOrderSn(orderSn);
-        payVo.setTotal_amount(orderEntity.getPayAmount().toString());
-        payVo.setSubject("谷粒商城订单支付");
+        payVo.setTotal_amount(orderEntity.getPayAmount().setScale(2).toString());
+        payVo.setSubject("hello");
         List<OrderItemEntity> orderItemEntities = orderItemService.list(new QueryWrapper<OrderItemEntity>().eq("order_sn", orderSn));
         String body="";
         for (OrderItemEntity orderItemEntity : orderItemEntities) {
             body+=orderItemEntity.getSkuName()+",";
         }
 
-        payVo.setBody(body);
+        payVo.setBody("hello");
+
+        System.out.println("支付宝支付参数："+payVo);
         String pay = alipayTemplate.pay(payVo);
 
 

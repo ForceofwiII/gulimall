@@ -169,7 +169,7 @@ public class MemberController {
     }
 
 
-    @GetMapping("/memberOrder.html")
+    @GetMapping("/memberOrder.html")  //处理支付完成后的请求
     public String memberOrder(HttpSession session , Model model){
 
         //查出当前用户的所有订单信息

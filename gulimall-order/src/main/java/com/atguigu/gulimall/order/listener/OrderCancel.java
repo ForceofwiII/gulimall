@@ -42,7 +42,7 @@ public class OrderCancel {
           orderDao.updateBySn(order1.getOrderSn(),4);
 
           //发无延迟消息去解锁库存
-            rabbitTemplate.convertAndSend("order.event.exchange","order.release.other.unlockStock",order1,(m)->{
+            rabbitTemplate.convertAndSend("order-event-exchange","order.release.other.unlockStock",order1,(m)->{
                 m.getMessageProperties().setDelay(0);
                 return m;
             });

@@ -4,10 +4,12 @@ package com.atguigu.gulimall.order.web;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.atguigu.common.vo.MemberEntityVo;
+import com.atguigu.gulimall.order.entity.OrderEntity;
 import com.atguigu.gulimall.order.service.OrderService;
 import com.atguigu.gulimall.order.vo.OrderConfirmVo;
 import com.atguigu.gulimall.order.vo.OrderSubmitVo;
 import com.atguigu.gulimall.order.vo.SubmitOrderResponseVo;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import javax.servlet.http.HttpSession;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static com.atguigu.common.constant.AuthServerConstant.LOGIN_USER;
@@ -89,6 +92,12 @@ public class OrderWebController {
 
 
 
+    }
+
+
+    @GetMapping("/select/{memberId}")
+    public List<OrderEntity> select(@PathVariable("memberId") Long memberId){
+        return orderService.list(new QueryWrapper<OrderEntity>().eq("member_id", memberId).ne("status", 4));
     }
 
 

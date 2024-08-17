@@ -64,9 +64,9 @@ public class AlipayTemplate {
 //       // model.setTimeExpire(timeout);
 //        alipayRequest.setBizModel(model);
 
-    //    AlipayTradePagePayResponse response = alipayClient.pageExecute(alipayRequest, "POST");
+      // AlipayTradePagePayResponse response = alipayClient.pageExecute(alipayRequest, "POST");
         alipayRequest.setReturnUrl(return_url);
-        alipayRequest.setNotifyUrl(notify_url);
+       alipayRequest.setNotifyUrl(notify_url);
 
         //商户订单号，商户网站订单系统中唯一订单号，必填
         String out_trade_no = vo.getOut_trade_no();
