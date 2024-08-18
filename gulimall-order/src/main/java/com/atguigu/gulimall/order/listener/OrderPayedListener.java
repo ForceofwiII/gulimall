@@ -56,12 +56,14 @@ public class OrderPayedListener {
         if (signVerified) {
             System.out.println("签名验证成功...");
             //去修改订单状态
-           // String result = orderService.handlePayResult(asyncVo);
+            String result = orderService.handlePayResult(asyncVo);
             return  "success";
         } else {
             System.out.println("签名验证失败...");
             return "error";
         }
+
+
     }
 
     @PostMapping(value = "/pay/notify")

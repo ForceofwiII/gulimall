@@ -11,12 +11,14 @@ import com.atguigu.common.vo.MemberEntityVo;
 import com.atguigu.gulimall.order.Constant;
 import com.atguigu.gulimall.order.dao.OrderItemDao;
 import com.atguigu.gulimall.order.entity.OrderItemEntity;
+import com.atguigu.gulimall.order.entity.PaymentInfoEntity;
 import com.atguigu.gulimall.order.enume.OrderStatusEnum;
 import com.atguigu.gulimall.order.feign.CartFeign;
 import com.atguigu.gulimall.order.feign.MemberFeign;
 import com.atguigu.gulimall.order.feign.ProductFeign;
 import com.atguigu.gulimall.order.feign.WareFeign;
 import com.atguigu.gulimall.order.service.OrderItemService;
+import com.atguigu.gulimall.order.service.PaymentInfoService;
 import com.atguigu.gulimall.order.to.OrderCreateTo;
 import com.atguigu.gulimall.order.vo.*;
 import org.apache.commons.lang.StringUtils;
@@ -83,6 +85,10 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
 
       @Autowired
     RabbitTemplate rabbitTemplate;
+
+
+      @Autowired
+    PaymentInfoService paymentInfoService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -239,6 +245,35 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         return orderDao.selectOne(new QueryWrapper<OrderEntity>().eq("order_sn",orderSn));
 
 
+    }
+
+    @Override
+    public String handlePayResult(PayAsyncVo asyncVo) {
+
+
+        String orderSn = asyncVo.getOut_trade_no();
+
+
+
+        //保存交易流水
+        PaymentInfoEntity paymentInfoEntity = new PaymentInfoEntity();
+        paymentInfoEntity.setOrderSn(orderSn);
+        paymentInfoEntity.setAlipayTradeNo(asyncVo.getTrade_no());
+        paymentInfoEntity.setPaymentStatus(asyncVo.getTrade_status());
+        paymentInfoEntity.setCallbackContent(asyncVo.getBody());
+        paymentInfoEntity.setCallbackTime(asyncVo.getNotify_time());
+        paymentInfoEntity.setCreateTime(new Date());
+        paymentInfoEntity.setTotalAmount(new BigDecimal(asyncVo.getTotal_amount()));
+        paymentInfoEntity.setSubject(asyncVo.getSubject());
+       paymentInfoService.save(paymentInfoEntity);
+
+        //修改订单状态
+        orderDao.updateBySn(orderSn, OrderStatusEnum.PAYED.getCode());
+
+
+
+
+        return "success";
     }
 
     //创建要保存订单数据

@@ -1,5 +1,6 @@
 package com.atguigu.gulimall.order.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.ToString;
 
@@ -12,6 +13,7 @@ public class PayAsyncVo {
     private String gmt_create;
     private String charset;
     private String gmt_payment;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date notify_time;
     private String subject;
     private String sign;
