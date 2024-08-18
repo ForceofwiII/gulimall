@@ -261,7 +261,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderDao, OrderEntity> impleme
         paymentInfoEntity.setAlipayTradeNo(asyncVo.getTrade_no());
         paymentInfoEntity.setPaymentStatus(asyncVo.getTrade_status());
         paymentInfoEntity.setCallbackContent(asyncVo.getBody());
-        paymentInfoEntity.setCallbackTime(asyncVo.getNotify_time());
+//        paymentInfoEntity.setCallbackTime(asyncVo.getNotify_time());
         paymentInfoEntity.setCreateTime(new Date());
         paymentInfoEntity.setTotalAmount(new BigDecimal(asyncVo.getTotal_amount()));
         paymentInfoEntity.setSubject(asyncVo.getSubject());

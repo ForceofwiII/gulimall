@@ -35,6 +35,7 @@ public class OrderPayedListener {
     public String handleAlipayed(PayAsyncVo asyncVo, HttpServletRequest request) throws AlipayApiException, UnsupportedEncodingException {
         // 只要收到支付宝的异步通知，返回 success 支付宝便不再通知
         // 获取支付宝POST过来反馈信息
+        System.out.println("收到消息");
         //TODO 需要验签
         Map<String, String> params = new HashMap<>();
         Map<String, String[]> requestParams = request.getParameterMap();

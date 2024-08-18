@@ -13,8 +13,8 @@ public class PayAsyncVo {
     private String gmt_create;
     private String charset;
     private String gmt_payment;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date notify_time;
+//    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+//    private Date notify_time;
     private String subject;
     private String sign;
     private String buyer_id;//支付者的id
