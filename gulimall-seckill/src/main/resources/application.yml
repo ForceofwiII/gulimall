@@ -1,0 +1,67 @@
+server:
+  port: 25000
+
+spring:
+
+  datasource:
+    username: root
+    password: root
+    url: jdbc:mysql://192.168.101.128:3306/gulimall_oms?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  rabbitmq:
+    host: 192.168.101.128
+    port: 5672
+    virtual-host: /
+    username: root
+    password: 123456
+
+
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.101.128:8848
+        namespace: dev
+
+  application:
+    name: gulimall-seckill
+  thymeleaf:
+    cache: false
+
+
+  redis:
+    host: 192.168.101.128
+    port: 6379
+  cache:
+    type: redis
+    redis:
+      cache-null-values: true
+      use-key-prefix: true
+      time-to-live: 3600000
+  session:
+    store-type: redis
+mybatis-plus:
+  mapper-locations: classpath:/mapper/**/*.xml
+  global-config:
+    db-config:
+      id-type: auto
+
+
+xxl:
+  job:
+    executor:
+      appname: gulimall-seckill
+      logpath: gulimall-seckill/xxl-job
+      logretentiondays: 30
+    admin:
+      addresses: http://localhost:8088/xxl-job-admin
+    accessToken: 3216414709
+
+
+
+
+
+gulimall:
+  thread:
+    coreSize: 20
+    maxSize: 200
+    keepAliveTime: 10

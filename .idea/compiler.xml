@@ -12,6 +12,7 @@
         <module name="gulimall-auth-server" />
         <module name="gulimall-order" />
         <module name="gulimall-gateway" />
+        <module name="gulimall-seckill" />
         <module name="gulimall-product" />
         <module name="gulimall-third-party" />
         <module name="gulimall-test-sso-client" />
@@ -20,6 +21,7 @@
         <module name="gulimall-search" />
         <module name="gulimall-ware" />
         <module name="gulimall-member" />
+        <module name="xxl-job-admin" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -38,6 +40,7 @@
       <module name="gulimall-order" options="-parameters" />
       <module name="gulimall-product" options="-parameters" />
       <module name="gulimall-search" options="-parameters" />
+      <module name="gulimall-seckill" options="-parameters" />
       <module name="gulimall-test-sso-client" options="-parameters" />
       <module name="gulimall-test-sso-server" options="-parameters" />
       <module name="gulimall-third-party" options="-parameters" />
