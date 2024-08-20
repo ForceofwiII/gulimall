@@ -10,6 +10,7 @@ import com.atguigu.gulimall.seckill.service.SeckillService;
 import com.atguigu.gulimall.seckill.to.SeckillSkuRedisTo;
 import com.atguigu.gulimall.seckill.vo.SeckillSessionWithSkusVo;
 import com.atguigu.gulimall.seckill.vo.SkuInfoVo;
+import org.apache.commons.lang.StringUtils;
 import org.redisson.api.RSemaphore;
 import org.redisson.api.RedissonClient;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -21,7 +22,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -68,6 +71,74 @@ public class SeckillServiceImpl  implements SeckillService {
             saveSessionSkuInfo(sessionData);
         }
 
+    }
+
+    @Override
+    public List<SeckillSkuRedisTo> getCurrentSeckillSkus() {
+
+        //1、确定当前时间属于哪个秒杀场次
+        long time = new Date().getTime();
+        Set<String> keys = redisTemplate.keys(SESSION__CACHE_PREFIX + "*");
+        for (String key : keys) {
+            //key的格式：seckill:sessions:startTime_endTime
+            String replace = key.replace(SESSION__CACHE_PREFIX, "");
+            String[] s = replace.split("_");
+            long start = Long.parseLong(s[0]);
+            long end = Long.parseLong(s[1]);
+            if(time>=start && time<=end){
+                //获取到当前场次的所有商品信息
+                List<String> range = redisTemplate.opsForList().range(key, -100, 100);
+                BoundHashOperations<String, Object, Object> ops = redisTemplate.boundHashOps(SECKILL_CHARE_PREFIX);
+                List<SeckillSkuRedisTo> collect = range.stream().map(k -> {
+                    String json = (String) ops.get(k);
+                    SeckillSkuRedisTo redisTo = JSON.parseObject(json, SeckillSkuRedisTo.class);
+                    //设置当前商品的秒杀开始时间和结束时间
+                    redisTo.setStartTime(start);
+                    redisTo.setEndTime(end);
+                    redisTo.setRandomCode(null);
+                    return redisTo;
+                }).collect(Collectors.toList());
+                return collect;
+            }
+
+        }
+
+
+        return null;
+    }
+
+    @Override
+    public String secKill(String killId, String key, Integer num) {
+
+        BoundHashOperations<String, String, String> operations = redisTemplate.boundHashOps(SECKILL_CHARE_PREFIX);
+        String s = operations.get(killId);
+        if (StringUtils.isEmpty(s)) {
+            return null;
+        }
+        SeckillSkuRedisTo seckillSkuRedisTo = JSON.parseObject(s, SeckillSkuRedisTo.class);
+        //校验合法性
+        if(seckillSkuRedisTo.getRandomCode()!=key){
+            return null;
+        }
+        //校验时间的合法性
+        long time = new Date().getTime();
+        if(time>=seckillSkuRedisTo.getStartTime() && time<=seckillSkuRedisTo.getEndTime()){
+            //校验购物数量是否合法
+            if(num<=seckillSkuRedisTo.getSeckillLimit()){
+                //校验库存是否足够
+                RSemaphore semaphore = redissonClient.getSemaphore(SKU_STOCK_SEMAPHORE + key);
+                boolean b = semaphore.tryAcquire(num);
+                if(b){
+                    //秒杀成功
+                    //快速下单，发送MQ消息
+                    String orderSn = UUID.randomUUID().toString().replace("-", "");
+                    rabbitTemplate.convertAndSend("order-event-exchange","order.seckill.order",orderSn);
+                    return orderSn;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
