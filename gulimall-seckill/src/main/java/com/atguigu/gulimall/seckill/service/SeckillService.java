@@ -9,5 +9,5 @@ public interface SeckillService {
 
     List<SeckillSkuRedisTo> getCurrentSeckillSkus();
 
-    String secKill(String killId, String key, Integer num);
+    String secKill(String killId, String key, Integer num) throws InterruptedException;
 }

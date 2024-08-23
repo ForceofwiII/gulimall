@@ -35,13 +35,13 @@ public class SeckillController {
     @GetMapping("/kill")
     public R secKill(@RequestParam("killId") String killId,
                      @RequestParam("key") String key,
-                     @RequestParam("num") Integer num){
+                     @RequestParam("num") Integer num) throws InterruptedException {
 
 
      String orderSn=   seckillService.secKill(killId,key,num);
 
 
-        return R.ok();
+        return R.ok().setData(orderSn);
     }
 
 

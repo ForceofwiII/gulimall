@@ -1,8 +1,11 @@
 package com.atguigu.gulimall.seckill.service.impl;
 
 import cn.hutool.core.date.DateTime;
+import cn.hutool.core.lang.Snowflake;
+import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.atguigu.common.to.mq.SeckillOrderTo;
 import com.atguigu.common.utils.R;
 import com.atguigu.gulimall.seckill.feign.CouponFeignService;
 import com.atguigu.gulimall.seckill.feign.ProductFeignService;
@@ -10,6 +13,7 @@ import com.atguigu.gulimall.seckill.service.SeckillService;
 import com.atguigu.gulimall.seckill.to.SeckillSkuRedisTo;
 import com.atguigu.gulimall.seckill.vo.SeckillSessionWithSkusVo;
 import com.atguigu.gulimall.seckill.vo.SkuInfoVo;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import org.apache.commons.lang.StringUtils;
 import org.redisson.api.RSemaphore;
 import org.redisson.api.RedissonClient;
@@ -108,16 +112,26 @@ public class SeckillServiceImpl  implements SeckillService {
     }
 
     @Override
-    public String secKill(String killId, String key, Integer num) {
+    public String secKill(String killId, String key, Integer num) throws InterruptedException {
+
+
+        RSemaphore semaphore = redissonClient.getSemaphore(SKU_STOCK_SEMAPHORE + key);
+        boolean b = semaphore.tryAcquire(num);
+        if(!b){
+            return null;
+        }
 
         BoundHashOperations<String, String, String> operations = redisTemplate.boundHashOps(SECKILL_CHARE_PREFIX);
         String s = operations.get(killId);
         if (StringUtils.isEmpty(s)) {
+
+            semaphore.release(num);
             return null;
         }
         SeckillSkuRedisTo seckillSkuRedisTo = JSON.parseObject(s, SeckillSkuRedisTo.class);
         //校验合法性
         if(seckillSkuRedisTo.getRandomCode()!=key){
+            semaphore.release(num);
             return null;
         }
         //校验时间的合法性
@@ -125,18 +139,28 @@ public class SeckillServiceImpl  implements SeckillService {
         if(time>=seckillSkuRedisTo.getStartTime() && time<=seckillSkuRedisTo.getEndTime()){
             //校验购物数量是否合法
             if(num<=seckillSkuRedisTo.getSeckillLimit()){
-                //校验库存是否足够
-                RSemaphore semaphore = redissonClient.getSemaphore(SKU_STOCK_SEMAPHORE + key);
-                boolean b = semaphore.tryAcquire(num);
-                if(b){
+                //todo 判断用户是否已经秒杀过
+
+
                     //秒杀成功
                     //快速下单，发送MQ消息
-                    String orderSn = UUID.randomUUID().toString().replace("-", "");
-                    rabbitTemplate.convertAndSend("order-event-exchange","order.seckill.order",orderSn);
+                    String orderSn = IdUtil.getSnowflake(1,1).nextIdStr();
+                SeckillOrderTo seckillOrderTo = new SeckillOrderTo();
+                seckillOrderTo.setSkuId(seckillSkuRedisTo.getSkuId());
+                seckillOrderTo.setOrderSn(orderSn);
+                seckillOrderTo.setNum(num);
+                seckillOrderTo.setPromotionSessionId(seckillSkuRedisTo.getPromotionSessionId());
+                seckillOrderTo.setMemberId(seckillOrderTo.getMemberId());
+
+                rabbitTemplate.convertAndSend("order-event-exchange","order.seckill.order",seckillOrderTo,(msg)->{
+                        msg.getMessageProperties().setDelay(0);
+                        return msg;
+                    });
                     return orderSn;
-                }
+
             }
         }
+        semaphore.release(num);
 
         return null;
     }
